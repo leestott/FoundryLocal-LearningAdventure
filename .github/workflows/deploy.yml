@@ -3,9 +3,6 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
   # Allow manual trigger
   workflow_dispatch:
 
@@ -31,6 +28,11 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      - name: List files to deploy
+        run: |
+          echo "Files in game/web:"
+          ls -la ./game/web/
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
@@ -44,7 +46,6 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main'
     steps:
       - name: Deploy to GitHub Pages
         id: deployment

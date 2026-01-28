@@ -7,10 +7,9 @@ This folder contains screenshots of the Foundry Local Learning Adventure game.
 ### Option 1: Using Playwright (Automated)
 
 ```bash
-cd web/tests
-npm install
-npx playwright install chromium
-npm run screenshot
+cd ..
+npm run test:install
+npm run test:screenshots
 ```
 
 ### Option 2: Manual Screenshots

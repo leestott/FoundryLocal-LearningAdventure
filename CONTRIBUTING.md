@@ -34,7 +34,7 @@ Thank you for your interest in contributing! This guide will help you get starte
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR-USERNAME/FoundryLocal-LearningAdventure.git
+git clone https://github.com/YOUR-GITHUB-USERNAME/FoundryLocal-LearningAdventure.git
 cd FoundryLocal-LearningAdventure/game
 
 # Install dependencies

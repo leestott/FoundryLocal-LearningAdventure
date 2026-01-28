@@ -5,7 +5,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Foundry Local](https://img.shields.io/badge/Foundry-Local-purple)](https://learn.microsoft.com/azure/ai-studio/foundry-local)
-[![GitHub Pages](https://img.shields.io/badge/Play-Online-orange)](https://your-username.github.io/LLM-Game/)
+[![GitHub Pages](https://img.shields.io/badge/Play-Online-orange)](https://leestott.github.io/FoundryLocal-LearningAdventure/)
 
 ---
 
@@ -13,7 +13,7 @@
 
 **No installation required!** Play the web version directly in your browser:
 
-👉 **[Play Foundry Learning Adventure](https://your-username.github.io/LLM-Game/)** 👈
+👉 **[Play Foundry Learning Adventure](https://leestott.github.io/FoundryLocal-LearningAdventure/)** 👈
 
 The web version includes all 5 levels and works completely in your browser with simulated AI responses.
 
@@ -185,8 +185,8 @@ You should see something like `v18.x.x` or higher.
 
 #### Option B: Clone with Git
 ```bash
-git clone <repository-url>
-cd LLM-Game
+git clone https://github.com/leestott/FoundryLocal-LearningAdventure.git
+cd FoundryLocal-LearningAdventure
 ```
 
 ---
@@ -503,7 +503,7 @@ Deploy your own copy of the game to GitHub Pages for free hosting!
 
 3. **Push to main branch** - deployment happens automatically!
 
-4. **Access your game** at: `https://your-username.github.io/LLM-Game/`
+4. **Access your game** at: `https://YOUR-USERNAME.github.io/FoundryLocal-LearningAdventure/`
 
 ### Option 2: Manual Deployment
 
@@ -517,7 +517,7 @@ Deploy your own copy of the game to GitHub Pages for free hosting!
 
 3. **Wait 2-3 minutes** for deployment
 
-4. **Visit** `https://your-username.github.io/LLM-Game/`
+4. **Visit** `https://YOUR-USERNAME.github.io/FoundryLocal-LearningAdventure/`
 
 ### Local Testing of Web Version
 
@@ -716,15 +716,14 @@ npm run reset
 Capture screenshots automatically using Playwright:
 
 ```bash
-# Navigate to test folder
-cd game/web/tests
+# Navigate to game folder
+cd game
 
-# Install dependencies
-npm install
-npx playwright install chromium
+# Install Playwright (first time only)
+npm run test:install
 
 # Capture all screenshots
-npm run screenshot
+npm run test:screenshots
 ```
 
 Screenshots are saved to `game/screenshots/`.

@@ -102,8 +102,8 @@ test-results/
 # ─────────────────────────────────────────────────────────────────────
 # Playwright
 # ─────────────────────────────────────────────────────────────────────
-game/web/tests/test-results/
-game/web/tests/playwright-report/
+game/tests/test-results/
+game/tests/playwright-report/
 **/playwright-report/
 **/test-results/
 

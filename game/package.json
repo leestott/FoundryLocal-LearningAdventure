@@ -9,8 +9,13 @@
     "dev": "node --watch src/game.js",
     "test": "node tests/test-game.js",
     "test:foundry": "pwsh -ExecutionPolicy Bypass -File tests/check-foundry.ps1",
+    "test:screenshots": "npx playwright test --config=tests/playwright.config.js",
+    "test:install": "npx playwright install chromium",
     "check": "node tests/test-game.js",
     "reset": "node -e \"require('fs').writeFileSync('data/progress.json', JSON.stringify({player:{name:'',createdAt:'',lastPlayed:''},stats:{totalPoints:0,currentLevel:1,levelsCompleted:0,hintsUsed:0,mentorQuestions:0,totalPlayTime:0,fastestLevel:null,totalPromptsSent:0},levels:{'1':{completed:false,startedAt:null,completedAt:null,attempts:0,hintsUsed:0,timeSpent:0},'2':{completed:false,startedAt:null,completedAt:null,attempts:0,hintsUsed:0,timeSpent:0},'3':{completed:false,startedAt:null,completedAt:null,attempts:0,hintsUsed:0,timeSpent:0},'4':{completed:false,startedAt:null,completedAt:null,attempts:0,hintsUsed:0,timeSpent:0},'5':{completed:false,startedAt:null,completedAt:null,attempts:0,hintsUsed:0,timeSpent:0}},badges:[],achievements:[]}, null, 2))\""
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
   },
   "keywords": [
     "foundry",

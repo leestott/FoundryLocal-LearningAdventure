@@ -5,7 +5,7 @@
 const { test, expect } = require('@playwright/test');
 const path = require('path');
 
-const SCREENSHOT_DIR = path.join(__dirname, '..', '..', 'screenshots');
+const SCREENSHOT_DIR = path.join(__dirname, '..', 'screenshots');
 
 test.describe('Game Screenshots', () => {
   
