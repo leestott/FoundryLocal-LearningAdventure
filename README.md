@@ -111,7 +111,18 @@ The easiest way to play is directly in your browser. The web version:
 
 1. **Download** or clone this repository
 2. **Navigate** to the `game` folder
-3. **Double-click** `start-game.bat`
+3. **Run one of these options:**
+
+   **Option A - Batch File (double-click):**
+   ```cmd
+   start-game.bat
+   ```
+
+   **Option B - PowerShell (recommended):**
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File .\start-game.ps1
+   ```
+
 4. **Follow** the on-screen prompts
 5. **Start playing!**
 
@@ -225,8 +236,25 @@ foundry model run Phi-4
 ### Step 5: Run the Game!
 
 #### Option A: Use the Startup Script (Recommended)
-- **Windows**: Double-click `game/start-game.bat`
-- **Mac/Linux**: Run `./game/start-game.sh`
+
+**Windows (Batch):**
+```cmd
+cd game
+start-game.bat
+```
+
+**Windows (PowerShell):**
+```powershell
+cd game
+powershell -ExecutionPolicy Bypass -File .\start-game.ps1
+```
+
+**Mac/Linux:**
+```bash
+cd game
+chmod +x start-game.sh
+./start-game.sh
+```
 
 #### Option B: Use npm
 ```bash

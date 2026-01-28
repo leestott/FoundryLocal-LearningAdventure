@@ -16,7 +16,26 @@ npm install
 npm start
 ```
 
-Or double-click `start-game.bat` (Windows) / run `./start-game.sh` (Mac/Linux).
+Or use the startup scripts:
+
+**Windows (Batch):**
+```cmd
+cd game
+start-game.bat
+```
+
+**Windows (PowerShell):**
+```powershell
+cd game
+powershell -ExecutionPolicy Bypass -File .\start-game.ps1
+```
+
+**Mac/Linux:**
+```bash
+cd game
+chmod +x start-game.sh
+./start-game.sh
+```
 
 ---
 
