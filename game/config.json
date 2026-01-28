@@ -1,7 +1,9 @@
 {
   "foundryLocal": {
-    "baseUrl": "http://localhost:5272",
-    "defaultModel": "Phi-4",
+    "baseUrl": "http://127.0.0.1:61341",
+    "defaultModel": "Phi-3.5-mini-instruct-generic-cpu:1",
+    "autoDiscoverPort": true,
+    "commonPorts": [61341, 5272, 5000, 8080],
     "alternativeModels": [
       "Phi-3-mini",
       "Mistral-7B",
@@ -11,6 +13,29 @@
     "embeddingsEndpoint": "/v1/embeddings",
     "modelsEndpoint": "/v1/models"
   },
+  "azureFoundry": {
+    "enabled": false,
+    "endpoint": "https://YOUR-RESOURCE.openai.azure.com",
+    "apiKey": "YOUR-API-KEY",
+    "apiVersion": "2024-02-01",
+    "deploymentName": "gpt-4o-mini",
+    "embeddingDeployment": "text-embedding-ada-002",
+    "models": [
+      {
+        "name": "gpt-4o-mini",
+        "description": "Fast and cost-effective for most tasks"
+      },
+      {
+        "name": "gpt-4o",
+        "description": "Most capable model for complex tasks"
+      },
+      {
+        "name": "gpt-35-turbo",
+        "description": "Good balance of speed and capability"
+      }
+    ]
+  },
+  "connectionMode": "auto",
   "game": {
     "maxHintsPerLevel": 3,
     "pointsMultiplierNoHints": 1.5,

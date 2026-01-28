@@ -7,12 +7,15 @@
     It checks prerequisites, installs dependencies, and starts the game.
 .NOTES
     Run this script by right-clicking and selecting "Run with PowerShell"
-    Or open PowerShell and run: .\start-game.ps1
+    Or open PowerShell and run: powershell -ExecutionPolicy Bypass -File scripts\start-game.ps1
 #>
 
 # Set strict mode for better error handling
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+# Get the game root directory (parent of scripts folder)
+$GameRoot = Split-Path -Parent $PSScriptRoot
 
 # Colors for output
 function Write-ColorOutput {
@@ -61,48 +64,55 @@ function Test-NodeInstalled {
 
 function Test-FoundryLocalRunning {
     Write-ColorOutput "[*] Checking for Foundry Local service..." "Yellow"
-    try {
-        $response = Invoke-WebRequest -Uri "http://localhost:5272/v1/models" -TimeoutSec 5 -ErrorAction SilentlyContinue
-        if ($response.StatusCode -eq 200) {
-            Write-ColorOutput "[OK] Foundry Local is running!" "Green"
-            $models = ($response.Content | ConvertFrom-Json).data
-            if ($models) {
-                Write-ColorOutput "   Available models: $($models.id -join ', ')" "Cyan"
+    
+    # Try multiple common ports
+    $ports = @(61341, 5272, 5000, 8080)
+    
+    foreach ($port in $ports) {
+        try {
+            $response = Invoke-WebRequest -Uri "http://localhost:$port/v1/models" -TimeoutSec 2 -ErrorAction SilentlyContinue
+            if ($response.StatusCode -eq 200) {
+                Write-ColorOutput "[OK] Foundry Local is running on port $port!" "Green"
+                $models = ($response.Content | ConvertFrom-Json).data
+                if ($models) {
+                    Write-ColorOutput "   Available models: $($models.id -join ', ')" "Cyan"
+                }
+                return $true
             }
-            return $true
+        } catch {
+            # Try next port
         }
-    } catch {
-        Write-ColorOutput "[!] Foundry Local not detected (game will run in demo mode)" "Yellow"
-        Write-Host ""
-        Write-Host "To enable full AI features:"
-        Write-Host "   1. Install Foundry Local: winget install Microsoft.FoundryLocal"
-        Write-Host "   2. Start a model: foundry model run Phi-4"
-        Write-Host "   3. Then run this script again"
-        Write-Host ""
-        Write-Host "   The game works without Foundry Local, but responses will be simulated."
-        Write-Host ""
-        return $false
     }
+    
+    Write-ColorOutput "[!] Foundry Local not detected (game will run in demo mode)" "Yellow"
+    Write-Host ""
+    Write-Host "To enable full AI features:"
+    Write-Host "   1. Install Foundry Local: winget install Microsoft.FoundryLocal"
+    Write-Host "   2. Start a model: foundry model run Phi-4"
+    Write-Host "   3. Then run this script again"
+    Write-Host ""
+    Write-Host "   The game works without Foundry Local, but responses will be simulated."
+    Write-Host ""
     return $false
 }
 
 function Install-Dependencies {
     Write-ColorOutput "[*] Installing dependencies..." "Yellow"
     
-    $packageJsonPath = Join-Path $PSScriptRoot "package.json"
+    $packageJsonPath = Join-Path $GameRoot "package.json"
     if (-not (Test-Path $packageJsonPath)) {
         Write-ColorOutput "[X] package.json not found! Make sure you're in the game folder." "Red"
         return $false
     }
     
-    $nodeModulesPath = Join-Path $PSScriptRoot "node_modules"
+    $nodeModulesPath = Join-Path $GameRoot "node_modules"
     if (Test-Path $nodeModulesPath) {
         Write-ColorOutput "[OK] Dependencies already installed" "Green"
         return $true
     }
     
     try {
-        Push-Location $PSScriptRoot
+        Push-Location $GameRoot
         $output = npm install 2>&1
         $exitCode = $LASTEXITCODE
         Pop-Location
@@ -125,7 +135,7 @@ function Start-Game {
     Write-ColorOutput "-------------------------------------------------" "Gray"
     Write-ColorOutput ""
     
-    Push-Location $PSScriptRoot
+    Push-Location $GameRoot
     try {
         node src/game.js
     } finally {

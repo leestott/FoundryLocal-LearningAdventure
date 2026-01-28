@@ -107,7 +107,67 @@ The easiest way to play is directly in your browser. The web version:
 
 ## 🚀 Quick Start (5 Minutes)
 
-### Windows Users (Easiest!)
+Choose how you want to play:
+
+| Option | Best For | AI Responses |
+|--------|----------|-------------|
+| **🌐 Web App** | Quick start, no install | Simulated |
+| **💻 CLI (Terminal)** | Full experience with Foundry Local | Real AI |
+
+---
+
+### Option 1: Web App (Browser) - Easiest!
+
+**No installation required** - play directly in your browser:
+
+#### Online (GitHub Pages)
+👉 **[Play Now](https://leestott.github.io/FoundryLocal-LearningAdventure/)** 👈
+
+#### Run Locally
+
+**Using startup scripts (easiest):**
+
+**Windows (Batch):**
+```cmd
+cd game
+scripts\start-web.bat
+```
+
+**Windows (PowerShell):**
+```powershell
+cd game
+powershell -ExecutionPolicy Bypass -File scripts\start-web.ps1
+```
+
+**Mac/Linux:**
+```bash
+cd game
+chmod +x scripts/start-web.sh
+./scripts/start-web.sh
+```
+
+**Or manually start a server:**
+```bash
+# Navigate to web folder
+cd game/web
+
+# Start a local server (choose one):
+npx http-server -p 8080 -c-1
+# OR
+python -m http.server 8080
+# OR
+python3 -m http.server 8080
+```
+
+Then open http://localhost:8080 in your browser.
+
+---
+
+### Option 2: CLI (Terminal) - Full Experience
+
+For real AI responses with Foundry Local:
+
+#### Windows Users
 
 1. **Download** or clone this repository
 2. **Navigate** to the `game` folder
@@ -115,18 +175,18 @@ The easiest way to play is directly in your browser. The web version:
 
    **Option A - Batch File (double-click):**
    ```cmd
-   start-game.bat
+   scripts\start-game.bat
    ```
 
    **Option B - PowerShell (recommended):**
    ```powershell
-   powershell -ExecutionPolicy Bypass -File .\start-game.ps1
+   powershell -ExecutionPolicy Bypass -File scripts\start-game.ps1
    ```
 
 4. **Follow** the on-screen prompts
 5. **Start playing!**
 
-### Mac/Linux Users
+#### Mac/Linux Users
 
 ```bash
 # Clone the repository
@@ -134,13 +194,13 @@ git clone <repository-url>
 cd game
 
 # Make the script executable
-chmod +x start-game.sh
+chmod +x scripts/start-game.sh
 
 # Run the game
-./start-game.sh
+./scripts/start-game.sh
 ```
 
-### Using npm Directly
+#### Using npm Directly
 
 ```bash
 cd game
@@ -240,20 +300,20 @@ foundry model run Phi-4
 **Windows (Batch):**
 ```cmd
 cd game
-start-game.bat
+scripts\start-game.bat
 ```
 
 **Windows (PowerShell):**
 ```powershell
 cd game
-powershell -ExecutionPolicy Bypass -File .\start-game.ps1
+powershell -ExecutionPolicy Bypass -File scripts\start-game.ps1
 ```
 
 **Mac/Linux:**
 ```bash
 cd game
-chmod +x start-game.sh
-./start-game.sh
+chmod +x scripts/start-game.sh
+./scripts/start-game.sh
 ```
 
 #### Option B: Use npm
@@ -715,9 +775,13 @@ FoundryLocal-LearningAdventure/
     │   └── progress.json   # Your saved progress
     ├── screenshots/        # Game screenshots
     ├── tests/              # Test files
-    ├── start-game.bat      # Windows launcher
-    ├── start-game.ps1      # PowerShell launcher
-    ├── start-game.sh       # Mac/Linux launcher
+    ├── scripts/            # All startup scripts
+    │   ├── start-game.bat  # Windows CLI launcher
+    │   ├── start-game.ps1  # PowerShell CLI launcher
+    │   ├── start-game.sh   # Mac/Linux CLI launcher
+    │   ├── start-web.bat   # Windows Web launcher
+    │   ├── start-web.ps1   # PowerShell Web launcher
+    │   └── start-web.sh    # Mac/Linux Web launcher
     ├── config.json         # Settings
     └── package.json        # Node.js configuration
 ```
@@ -773,12 +837,48 @@ Edit `config.json` to customize:
     "baseUrl": "http://localhost:5272",
     "defaultModel": "Phi-4"
   },
+  "azureFoundry": {
+    "enabled": false,
+    "endpoint": "https://YOUR-RESOURCE.openai.azure.com",
+    "apiKey": "YOUR-API-KEY",
+    "apiVersion": "2024-02-01",
+    "deploymentName": "gpt-4o-mini"
+  },
   "game": {
     "maxHintsPerLevel": 3,
     "demoModeEnabled": true
   }
 }
 ```
+
+### Connection Modes
+
+The game automatically detects available AI services:
+
+| Priority | Mode | Description |
+|----------|------|-------------|
+| 1 | **Foundry Local** | Uses local AI model (default) |
+| 2 | **Azure OpenAI** | Uses Azure cloud if configured |
+| 3 | **Demo Mode** | Simulated responses (fallback) |
+
+### Using Azure OpenAI (Cloud)
+
+To use Azure OpenAI instead of local models:
+
+1. **Create an Azure OpenAI resource** at [Azure Portal](https://portal.azure.com)
+2. **Deploy a model** (e.g., gpt-4o-mini)
+3. **Update config.json**:
+   ```json
+   {
+     "azureFoundry": {
+       "enabled": true,
+       "endpoint": "https://your-resource.openai.azure.com",
+       "apiKey": "your-api-key",
+       "deploymentName": "gpt-4o-mini"
+     }
+   }
+   ```
+4. Run the game - it will connect to Azure!
 
 ### Common Changes
 

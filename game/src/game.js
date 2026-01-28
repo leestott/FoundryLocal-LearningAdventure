@@ -18,31 +18,173 @@ const __dirname = path.dirname(__filename);
  */
 class FoundryLocalClient {
     constructor(options = {}) {
-        this.baseUrl = options.baseUrl || 'http://localhost:5272';
-        this.model = options.model || 'Phi-4';
+        this.baseUrl = options.baseUrl || 'http://127.0.0.1:61341';
+        this.model = options.model || 'Phi-3.5-mini-instruct-generic-cpu:1';
         this.initialized = false;
+        this.connectionMode = 'demo'; // 'local', 'azure', or 'demo'
+        this.availableModels = [];
+        this.azureConfig = options.azureConfig || null;
+        this.autoDiscoverPort = options.autoDiscoverPort !== false;
+        this.commonPorts = options.commonPorts || [61341, 5272, 5000, 8080];
     }
 
     /**
      * Initialize the client and verify connection
      */
     async initialize() {
-        console.log('\n🔌 Connecting to Foundry Local...');
+        console.log('\n' + '='.repeat(60));
+        console.log('  FOUNDRY CONNECTION STATUS');
+        console.log('='.repeat(60));
+        
+        // Try Foundry Local first
+        console.log('\n[*] Checking Foundry Local...');
+        const localConnected = await this.tryFoundryLocal();
+        
+        if (localConnected) {
+            this.connectionMode = 'local';
+            this.initialized = true;
+            this.displayConnectionStatus();
+            return true;
+        }
+
+        // Try Azure Foundry if configured
+        if (this.azureConfig?.enabled) {
+            console.log('\n[*] Checking Azure Foundry...');
+            const azureConnected = await this.tryAzureFoundry();
+            
+            if (azureConnected) {
+                this.connectionMode = 'azure';
+                this.initialized = true;
+                this.displayConnectionStatus();
+                return true;
+            }
+        }
+
+        // Fall back to demo mode
+        this.connectionMode = 'demo';
+        this.initialized = false;
+        this.displayConnectionStatus();
+        return false;
+    }
+
+    /**
+     * Try connecting to Foundry Local
+     */
+    async tryFoundryLocal() {
+        // First try the configured URL
+        if (await this.tryFoundryUrl(this.baseUrl)) {
+            return true;
+        }
+
+        // Auto-discover port if enabled
+        if (this.autoDiscoverPort) {
+            console.log('    Trying alternative ports...');
+            for (const port of this.commonPorts) {
+                const url = `http://127.0.0.1:${port}`;
+                if (url !== this.baseUrl && await this.tryFoundryUrl(url)) {
+                    this.baseUrl = url;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Try connecting to a specific Foundry URL
+     */
+    async tryFoundryUrl(url) {
         try {
-            // Check if Foundry Local is running
-            const response = await fetch(`${this.baseUrl}/v1/models`);
+            const response = await fetch(`${url}/v1/models`, {
+                signal: AbortSignal.timeout(3000)
+            });
             if (response.ok) {
                 const data = await response.json();
-                console.log(`✅ Connected! Available models: ${data.data?.map(m => m.id).join(', ') || this.model}`);
-                this.initialized = true;
+                this.availableModels = data.data?.map(m => m.id) || [this.model];
+                // Select first chat-capable model if current model not available
+                if (this.availableModels.length > 0 && !this.availableModels.includes(this.model)) {
+                    // Prefer instruction/chat models
+                    const chatModel = this.availableModels.find(m => 
+                        m.toLowerCase().includes('instruct') || 
+                        m.toLowerCase().includes('chat') ||
+                        m.toLowerCase().includes('phi')
+                    );
+                    this.model = chatModel || this.availableModels[0];
+                }
                 return true;
             }
         } catch (error) {
-            console.log('⚠️  Foundry Local not detected. Running in demo mode.');
-            console.log('💡 To use the full experience, start Foundry Local with: foundry model run');
-            this.initialized = false;
+            // Connection failed
         }
         return false;
+    }
+
+    /**
+     * Try connecting to Azure Foundry
+     */
+    async tryAzureFoundry() {
+        if (!this.azureConfig?.endpoint || !this.azureConfig?.apiKey) {
+            return false;
+        }
+
+        try {
+            const response = await fetch(
+                `${this.azureConfig.endpoint}/openai/deployments?api-version=${this.azureConfig.apiVersion}`,
+                {
+                    headers: { 'api-key': this.azureConfig.apiKey },
+                    signal: AbortSignal.timeout(5000)
+                }
+            );
+            if (response.ok) {
+                this.model = this.azureConfig.deploymentName;
+                this.availableModels = this.azureConfig.models?.map(m => m.name) || [this.model];
+                return true;
+            }
+        } catch (error) {
+            // Connection failed
+        }
+        return false;
+    }
+
+    /**
+     * Display connection status
+     */
+    displayConnectionStatus() {
+        console.log('');
+        switch (this.connectionMode) {
+            case 'local':
+                console.log('[OK] Foundry Local Connected!');
+                console.log(`     Endpoint: ${this.baseUrl}`);
+                console.log(`     Active Model: ${this.model}`);
+                if (this.availableModels.length > 1) {
+                    console.log(`     Available Models: ${this.availableModels.join(', ')}`);
+                }
+                console.log('');
+                console.log('     AI responses will be generated locally.');
+                break;
+            
+            case 'azure':
+                console.log('[OK] Azure Foundry Connected!');
+                console.log(`     Endpoint: ${this.azureConfig.endpoint}`);
+                console.log(`     Deployment: ${this.model}`);
+                console.log('');
+                console.log('     AI responses will use Azure OpenAI Service.');
+                break;
+            
+            case 'demo':
+                console.log('[!] Running in Demo Mode');
+                console.log('    No AI service connected - using simulated responses.');
+                console.log('');
+                console.log('    To enable real AI:');
+                console.log('    - Local: Install Foundry Local and run a model');
+                console.log('      > winget install Microsoft.FoundryLocal');
+                console.log('      > foundry model run Phi-4');
+                console.log('');
+                console.log('    - Cloud: Configure Azure in config.json');
+                break;
+        }
+        console.log('');
+        console.log('='.repeat(60));
     }
 
     /**
@@ -54,17 +196,29 @@ class FoundryLocalClient {
         }
 
         try {
-            const response = await fetch(`${this.baseUrl}/v1/chat/completions`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    model: this.model,
-                    messages: [{ role: 'user', content: message }],
-                    max_tokens: 500,
-                    temperature: 0.7
-                })
+            let url, headers, body;
+
+            if (this.connectionMode === 'azure') {
+                // Azure OpenAI API
+                url = `${this.azureConfig.endpoint}/openai/deployments/${this.model}/chat/completions?api-version=${this.azureConfig.apiVersion}`;
+                headers = {
+                    'Content-Type': 'application/json',
+                    'api-key': this.azureConfig.apiKey
+                };
+            } else {
+                // Foundry Local API
+                url = `${this.baseUrl}/v1/chat/completions`;
+                headers = { 'Content-Type': 'application/json' };
+            }
+
+            body = JSON.stringify({
+                model: this.model,
+                messages: [{ role: 'user', content: message }],
+                max_tokens: 500,
+                temperature: 0.7
             });
 
+            const response = await fetch(url, { method: 'POST', headers, body });
             const data = await response.json();
             return data.choices?.[0]?.message?.content || 'No response received.';
         } catch (error) {
@@ -82,9 +236,22 @@ class FoundryLocalClient {
         }
 
         try {
-            const response = await fetch(`${this.baseUrl}/v1/chat/completions`, {
+            let url, headers;
+
+            if (this.connectionMode === 'azure') {
+                url = `${this.azureConfig.endpoint}/openai/deployments/${this.model}/chat/completions?api-version=${this.azureConfig.apiVersion}`;
+                headers = {
+                    'Content-Type': 'application/json',
+                    'api-key': this.azureConfig.apiKey
+                };
+            } else {
+                url = `${this.baseUrl}/v1/chat/completions`;
+                headers = { 'Content-Type': 'application/json' };
+            }
+
+            const response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify({
                     model: this.model,
                     messages: [
@@ -108,20 +275,30 @@ class FoundryLocalClient {
      */
     async getEmbedding(text) {
         if (!this.initialized) {
-            // Return a simple hash-based pseudo-embedding for demo
             return this.getPseudoEmbedding(text);
         }
 
         try {
-            const response = await fetch(`${this.baseUrl}/v1/embeddings`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    model: 'text-embedding-3-small',
-                    input: text
-                })
+            let url, headers, body;
+
+            if (this.connectionMode === 'azure') {
+                const embeddingDeployment = this.azureConfig.embeddingDeployment || 'text-embedding-ada-002';
+                url = `${this.azureConfig.endpoint}/openai/deployments/${embeddingDeployment}/embeddings?api-version=${this.azureConfig.apiVersion}`;
+                headers = {
+                    'Content-Type': 'application/json',
+                    'api-key': this.azureConfig.apiKey
+                };
+            } else {
+                url = `${this.baseUrl}/v1/embeddings`;
+                headers = { 'Content-Type': 'application/json' };
+            }
+
+            body = JSON.stringify({
+                model: this.connectionMode === 'azure' ? undefined : 'text-embedding-3-small',
+                input: text
             });
 
+            const response = await fetch(url, { method: 'POST', headers, body });
             const data = await response.json();
             return data.data?.[0]?.embedding || this.getPseudoEmbedding(text);
         } catch (error) {
@@ -334,7 +511,8 @@ class ProgressManager {
  */
 class FoundryLearningGame {
     constructor() {
-        this.foundryClient = new FoundryLocalClient();
+        this.config = null;
+        this.foundryClient = null;
         this.levelManager = new LevelManager();
         this.progressManager = new ProgressManager();
         this.taskHandler = null;
@@ -346,6 +524,25 @@ class FoundryLearningGame {
     }
 
     /**
+     * Load configuration file
+     */
+    async loadConfig() {
+        try {
+            const configPath = path.join(__dirname, '..', 'config.json');
+            const data = await fs.readFile(configPath, 'utf-8');
+            this.config = JSON.parse(data);
+        } catch (error) {
+            // Use defaults if config not found
+            this.config = {
+                foundryLocal: { baseUrl: 'http://localhost:5272', defaultModel: 'Phi-4' },
+                azureFoundry: { enabled: false },
+                connectionMode: 'auto'
+            };
+        }
+        return this.config;
+    }
+
+    /**
      * Initialize the game
      */
     async initialize() {
@@ -353,6 +550,18 @@ class FoundryLearningGame {
         this.rl = createInterface({
             input: process.stdin,
             output: process.stdout
+        });
+
+        // Load configuration
+        await this.loadConfig();
+
+        // Initialize Foundry client with config
+        this.foundryClient = new FoundryLocalClient({
+            baseUrl: this.config.foundryLocal?.baseUrl,
+            model: this.config.foundryLocal?.defaultModel,
+            azureConfig: this.config.azureFoundry,
+            autoDiscoverPort: this.config.foundryLocal?.autoDiscoverPort,
+            commonPorts: this.config.foundryLocal?.commonPorts
         });
 
         // Initialize components
@@ -368,7 +577,6 @@ class FoundryLearningGame {
      * Display the game banner
      */
     displayBanner() {
-        console.clear();
         console.log(`
 ╔══════════════════════════════════════════════════════════════════╗
 ║                                                                  ║
@@ -442,6 +650,7 @@ class FoundryLearningGame {
      */
     async run() {
         await this.initialize();
+        console.log(''); // Spacing after connection status
         this.displayBanner();
 
         const playerName = await this.getPlayerName();

@@ -95,6 +95,32 @@ body {
     gap: var(--gap);
 }
 
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--gap);
+}
+
+.connection-status {
+    padding: 0.4rem 0.8rem;
+    background: var(--bg-dark);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.status-connected {
+    color: var(--secondary);
+}
+
+.status-demo {
+    color: var(--accent);
+}
+
+.status-checking {
+    color: var(--text-muted);
+}
+
 .stat {
     display: flex;
     align-items: center;

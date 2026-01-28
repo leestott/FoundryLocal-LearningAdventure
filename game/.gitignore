@@ -108,8 +108,9 @@ tests/playwright-report/
 # ─────────────────────────────────────────────────────────────────────
 # Game-Specific
 # ─────────────────────────────────────────────────────────────────────
-# Player progress is intentionally tracked for personal use
-# If sharing publicly, users should reset their progress
+# Ignore player progress to keep repo clean
+# Each user gets fresh progress when they clone
+data/progress.json
 
 # Foundry Local cache (if any)
 .foundry/

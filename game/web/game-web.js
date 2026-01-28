@@ -2,6 +2,15 @@
    Foundry Local Learning Adventure - Web Game Engine
    ═══════════════════════════════════════════════════════════════════ */
 
+// Foundry Local Connection State
+let foundryConnection = {
+    connected: false,
+    baseUrl: null,
+    model: null,
+    availableModels: [],
+    commonPorts: [61341, 5272, 5000, 8080]
+};
+
 // Game State
 let gameState = {
     player: {
@@ -19,10 +28,99 @@ let gameState = {
 };
 
 // ═══════════════════════════════════════════════════════════════════
+// FOUNDRY LOCAL CONNECTION
+// ═══════════════════════════════════════════════════════════════════
+
+async function checkFoundryConnection() {
+    console.log('[Foundry] Checking for Foundry Local...');
+    
+    for (const port of foundryConnection.commonPorts) {
+        const url = `http://127.0.0.1:${port}`;
+        try {
+            const response = await fetch(`${url}/v1/models`, {
+                signal: AbortSignal.timeout(2000)
+            });
+            if (response.ok) {
+                const data = await response.json();
+                foundryConnection.connected = true;
+                foundryConnection.baseUrl = url;
+                foundryConnection.availableModels = data.data?.map(m => m.id) || [];
+                
+                // Select a chat-capable model
+                const chatModel = foundryConnection.availableModels.find(m => 
+                    m.toLowerCase().includes('instruct') || 
+                    m.toLowerCase().includes('chat') ||
+                    m.toLowerCase().includes('phi')
+                );
+                foundryConnection.model = chatModel || foundryConnection.availableModels[0];
+                
+                console.log(`[Foundry] Connected to ${url}`);
+                console.log(`[Foundry] Available models: ${foundryConnection.availableModels.join(', ')}`);
+                console.log(`[Foundry] Using model: ${foundryConnection.model}`);
+                updateConnectionStatus();
+                return true;
+            }
+        } catch (error) {
+            // Try next port
+        }
+    }
+    
+    console.log('[Foundry] Not detected - running in demo mode');
+    foundryConnection.connected = false;
+    updateConnectionStatus();
+    return false;
+}
+
+function updateConnectionStatus() {
+    const statusEl = document.getElementById('connectionStatus');
+    if (statusEl) {
+        if (foundryConnection.connected) {
+            statusEl.innerHTML = `<span class="status-connected">🟢 Foundry Local (${foundryConnection.model?.split(':')[0] || 'Connected'})</span>`;
+            statusEl.title = `Connected to ${foundryConnection.baseUrl}`;
+        } else {
+            statusEl.innerHTML = `<span class="status-demo">🟡 Demo Mode</span>`;
+            statusEl.title = 'Foundry Local not detected - using simulated responses';
+        }
+    }
+}
+
+async function callFoundryAPI(prompt, systemPrompt = null) {
+    if (!foundryConnection.connected) {
+        return null; // Fall back to demo responses
+    }
+    
+    try {
+        const messages = systemPrompt 
+            ? [{ role: 'system', content: systemPrompt }, { role: 'user', content: prompt }]
+            : [{ role: 'user', content: prompt }];
+        
+        const response = await fetch(`${foundryConnection.baseUrl}/v1/chat/completions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: foundryConnection.model,
+                messages: messages,
+                max_tokens: 500,
+                temperature: 0.7
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            return data.choices?.[0]?.message?.content || null;
+        }
+    } catch (error) {
+        console.error('[Foundry] API call failed:', error);
+    }
+    return null;
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // INITIALIZATION
 // ═══════════════════════════════════════════════════════════════════
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await checkFoundryConnection();
     loadProgress();
     initMentor();
 });
@@ -222,14 +320,21 @@ async function sendSimplePrompt() {
     output.style.display = 'block';
     response.innerHTML = '<span class="loading"></span> Thinking...';
     
-    // Simulate API call (in real version, call Foundry Local)
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+    let aiResponse;
     
-    // Get demo response
-    const responses = DEMO_RESPONSES.simple;
-    const demoResponse = responses[gameState.taskProgress.promptCount % responses.length];
+    // Try Foundry Local first, fall back to demo
+    if (foundryConnection.connected) {
+        aiResponse = await callFoundryAPI(prompt);
+    }
     
-    response.textContent = demoResponse;
+    if (!aiResponse) {
+        // Simulate delay for demo mode
+        await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+        const responses = DEMO_RESPONSES.simple;
+        aiResponse = responses[gameState.taskProgress.promptCount % responses.length];
+    }
+    
+    response.textContent = aiResponse;
     gameState.taskProgress.promptCount++;
     countDisplay.textContent = gameState.taskProgress.promptCount;
     
@@ -296,9 +401,21 @@ function buildPromptImprovementUI(container, level) {
 async function testBadPrompt() {
     const output = document.getElementById('badPromptOutput');
     const response = document.getElementById('badResponse');
+    const level = GAME_DATA.levels.find(l => l.id === gameState.currentLevel);
     
     output.style.display = 'block';
     response.innerHTML = '<span class="loading"></span> Generating...';
+    
+    // Try Foundry Local for real AI response
+    if (foundryConnection.connected) {
+        try {
+            const aiResponse = await callFoundryAPI(level.badPrompt);
+            response.textContent = aiResponse;
+            return;
+        } catch (error) {
+            console.log('Bad prompt Foundry error, using demo:', error.message);
+        }
+    }
     
     await new Promise(resolve => setTimeout(resolve, 800));
     response.textContent = DEMO_RESPONSES.improved.bad;
@@ -322,6 +439,20 @@ async function testImprovedPrompt() {
     
     output.style.display = 'block';
     response.innerHTML = '<span class="loading"></span> Generating...';
+    
+    // Try Foundry Local for real AI response
+    if (foundryConnection.connected) {
+        try {
+            const aiResponse = await callFoundryAPI(improved);
+            response.textContent = aiResponse;
+            gameState.taskProgress.improved = true;
+            addMentorMessage("Wow! See the difference? Your specific prompt got a much better, more useful response. That's prompt engineering!", 'sage');
+            setTimeout(() => completeLevel(), 2000);
+            return;
+        } catch (error) {
+            console.log('Improved prompt Foundry error, using demo:', error.message);
+        }
+    }
     
     await new Promise(resolve => setTimeout(resolve, 1200));
     response.textContent = DEMO_RESPONSES.improved.good;
@@ -474,10 +605,29 @@ async function runWorkflow() {
         outputEl.style.display = 'block';
         outputEl.innerHTML = '<span class="loading"></span> Processing...';
         
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        let response;
         
-        // Get demo response
-        const response = DEMO_RESPONSES.workflow[i];
+        // Try Foundry Local for real AI response
+        if (foundryConnection.connected) {
+            try {
+                // Build step-specific prompt
+                const stepPrompt = `Step: ${step.name}
+Task: ${step.description}
+Input: ${currentInput}
+
+Please complete this step of the workflow. Be concise and produce output that can be used in the next step.`;
+                
+                response = await callFoundryAPI(stepPrompt);
+            } catch (error) {
+                console.log(`Workflow step ${i + 1} Foundry error, using demo:`, error.message);
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                response = DEMO_RESPONSES.workflow[i];
+            }
+        } else {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            response = DEMO_RESPONSES.workflow[i];
+        }
+        
         outputEl.textContent = response;
         
         // Mark complete
@@ -611,10 +761,50 @@ async function testTool() {
     output.style.display = 'block';
     response.innerHTML = '<span class="loading"></span> Running your tool...';
     
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Generate demo response based on tool type
     const tool = gameState.taskProgress.tool;
+    let demoResponse;
+    
+    // Try Foundry Local for real AI response
+    if (foundryConnection.connected) {
+        try {
+            const toolResponse = await fetch(`${foundryConnection.baseUrl}/v1/chat/completions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: foundryConnection.model,
+                    messages: [
+                        { role: 'system', content: tool.systemPrompt },
+                        { role: 'user', content: input }
+                    ],
+                    max_tokens: 500,
+                    temperature: 0.7
+                })
+            });
+            
+            if (toolResponse.ok) {
+                const data = await toolResponse.json();
+                demoResponse = `Using your "${tool.name}" tool:\n\n${data.choices[0].message.content}`;
+            } else {
+                throw new Error('Non-OK response');
+            }
+        } catch (error) {
+            console.log('Tool test Foundry error, using demo:', error.message);
+            demoResponse = generateDemoToolResponse(tool, input);
+        }
+    } else {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        demoResponse = generateDemoToolResponse(tool, input);
+    }
+    
+    response.textContent = demoResponse;
+    gameState.taskProgress.toolTested = true;
+    
+    addMentorMessage("Congratulations! You've built and tested your very own AI tool. You've completed all 5 levels and earned the Foundry Champion badge! 🏆", 'sage');
+    
+    setTimeout(() => completeLevel(), 2000);
+}
+
+function generateDemoToolResponse(tool, input) {
     let demoResponse = `Using your "${tool.name}" tool on the input:\n\n`;
     
     if (tool.systemPrompt.toLowerCase().includes('summar')) {
@@ -625,12 +815,7 @@ async function testTool() {
         demoResponse += `Based on my instructions as "${tool.name}", I've analyzed your input and provided a helpful response! This demonstrates how custom AI tools can be specialized for specific tasks.`;
     }
     
-    response.textContent = demoResponse;
-    gameState.taskProgress.toolTested = true;
-    
-    addMentorMessage("Congratulations! You've built and tested your very own AI tool. You've completed all 5 levels and earned the Foundry Champion badge! 🏆", 'sage');
-    
-    setTimeout(() => completeLevel(), 2000);
+    return demoResponse;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -796,27 +981,76 @@ function handleMentorKeypress(event) {
     }
 }
 
-function askMentor() {
+async function askMentor() {
     const input = document.getElementById('mentorQuestion');
-    const question = input.value.trim().toLowerCase();
+    const question = input.value.trim();
     
     if (!question) return;
     
     addMentorMessage(input.value, 'user');
     input.value = '';
     
-    // Find response
+    // Try Foundry Local for intelligent response
+    if (foundryConnection.connected) {
+        try {
+            addMentorMessage("Let me think about that...", 'sage');
+            
+            const systemPrompt = `You are a helpful AI mentor named Sage, guiding a learner through the Foundry Local Learning Adventure game. 
+The game teaches AI/ML concepts through 5 levels:
+- Level 1: First Contact (basic prompts)
+- Level 2: The Art of Asking (prompt engineering)
+- Level 3: Understanding Context (embeddings)
+- Level 4: Building Workflows (AI pipelines)
+- Level 5: The Final Challenge (combining skills)
+
+Be encouraging, concise, and helpful. If asked about game topics, explain AI concepts simply.`;
+            
+            const response = await fetch(`${foundryConnection.baseUrl}/v1/chat/completions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: foundryConnection.model,
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: question }
+                    ],
+                    max_tokens: 300,
+                    temperature: 0.7
+                })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const aiResponse = data.choices[0].message.content;
+                // Remove the "thinking" message and add real response
+                const messages = document.getElementById('mentorMessages');
+                messages.removeChild(messages.lastChild);
+                addMentorMessage(aiResponse, 'sage');
+                return;
+            }
+        } catch (error) {
+            console.log('Mentor Foundry error, using fallback:', error.message);
+            // Remove "thinking" message if it was added
+            const messages = document.getElementById('mentorMessages');
+            if (messages.lastChild?.textContent === "Let me think about that...") {
+                messages.removeChild(messages.lastChild);
+            }
+        }
+    }
+    
+    // Fallback to static responses
+    const questionLower = question.toLowerCase();
     let response = GAME_DATA.mentor.responses.default;
     
     for (const [key, value] of Object.entries(GAME_DATA.mentor.responses)) {
-        if (question.includes(key)) {
+        if (questionLower.includes(key)) {
             response = value;
             break;
         }
     }
     
     // Check for level-specific help
-    const levelMatch = question.match(/level\s*(\d)/);
+    const levelMatch = questionLower.match(/level\s*(\d)/);
     if (levelMatch) {
         const levelNum = parseInt(levelMatch[1]);
         if (GAME_DATA.mentor.levelHelp[levelNum]) {
