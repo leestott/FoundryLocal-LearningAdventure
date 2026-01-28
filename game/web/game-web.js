@@ -844,24 +844,56 @@ function completeLevel() {
     saveProgress();
     updateStats();
     
-    // Show completion modal
-    const modal = document.getElementById('completeModal');
-    const content = document.getElementById('completeContent');
-    
-    content.innerHTML = `
-        <div class="celebration-content">
-            <div class="celebration-badge">${level.rewardIcon}</div>
-            <h3>You earned: ${level.reward}!</h3>
-            <p class="celebration-message">${level.title} complete!</p>
-            <p class="celebration-points">+${level.points} points</p>
-        </div>
-    `;
-    
-    modal.classList.add('active');
+    // Show inline celebration below the task output (not a modal)
+    showInlineCelebration(level, badge);
     
     // Check if all levels complete
     if (gameState.player.badges.length >= 5) {
         addMentorMessage("🎉 CONGRATULATIONS! You've completed all levels and become a true Foundry Champion! You now have the skills to build amazing AI applications!", 'sage');
+    }
+}
+
+function showInlineCelebration(level, badge) {
+    // Remove any existing celebration
+    const existing = document.querySelector('.inline-celebration');
+    if (existing) existing.remove();
+    
+    // Create inline celebration element
+    const celebration = document.createElement('div');
+    celebration.className = 'inline-celebration';
+    celebration.innerHTML = `
+        <div class="celebration-icon">${level.rewardIcon}</div>
+        <h3>Level Complete!</h3>
+        <p class="badge-name">You earned: ${level.reward}</p>
+        <p class="points-earned">+${level.points} points</p>
+        <div class="celebration-actions">
+            <button class="btn btn-replay" onclick="replayCurrentLevel()">
+                <span class="btn-icon">🔄</span> Review Output
+            </button>
+            <button class="btn btn-continue" onclick="returnToMenu()">
+                <span class="btn-icon">▶️</span> Continue to Menu
+            </button>
+        </div>
+    `;
+    
+    // Append to task area so output remains visible above
+    const taskArea = document.getElementById('taskArea');
+    taskArea.appendChild(celebration);
+    
+    // Scroll celebration into view smoothly
+    celebration.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+
+function replayCurrentLevel() {
+    // Remove celebration and let user review their work
+    const celebration = document.querySelector('.inline-celebration');
+    if (celebration) {
+        celebration.innerHTML = `
+            <p style="color: var(--text-secondary); margin-bottom: var(--gap);">Take your time reviewing your work above.</p>
+            <button class="btn btn-continue" onclick="returnToMenu()">
+                <span class="btn-icon">▶️</span> Continue to Menu
+            </button>
+        `;
     }
 }
 
