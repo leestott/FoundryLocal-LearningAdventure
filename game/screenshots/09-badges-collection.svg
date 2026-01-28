@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1a1a2e"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="500" fill="url(#bg)"/>
+  
+  <!-- Dimmed Background -->
+  <rect width="800" height="500" fill="black" opacity="0.7"/>
+  
+  <!-- Modal -->
+  <rect x="150" y="50" width="500" height="400" rx="12" fill="#1e293b"/>
+  
+  <!-- Modal Header -->
+  <rect x="150" y="50" width="500" height="50" rx="12" fill="#0f172a"/>
+  <text x="180" y="82" font-family="Segoe UI, sans-serif" font-size="18" fill="#f8fafc" font-weight="600">🏆 Your Badges</text>
+  <text x="620" y="82" font-family="Segoe UI, sans-serif" font-size="20" fill="#94a3b8">×</text>
+  
+  <!-- Badge 1 - Earned -->
+  <rect x="170" y="120" width="460" height="55" rx="8" fill="#0f172a"/>
+  <text x="200" y="153" font-family="Segoe UI, sans-serif" font-size="24">🎯</text>
+  <text x="240" y="143" font-family="Segoe UI, sans-serif" font-size="14" fill="#f8fafc" font-weight="600">Prompt Apprentice</text>
+  <text x="240" y="160" font-family="Segoe UI, sans-serif" font-size="12" fill="#94a3b8">Made your first AI call</text>
+  <text x="600" y="153" font-family="Segoe UI, sans-serif" font-size="16" fill="#10b981">✓</text>
+  
+  <!-- Badge 2 - Earned -->
+  <rect x="170" y="185" width="460" height="55" rx="8" fill="#0f172a"/>
+  <text x="200" y="218" font-family="Segoe UI, sans-serif" font-size="24">✨</text>
+  <text x="240" y="208" font-family="Segoe UI, sans-serif" font-size="14" fill="#f8fafc" font-weight="600">Prompt Engineer</text>
+  <text x="240" y="225" font-family="Segoe UI, sans-serif" font-size="12" fill="#94a3b8">Mastered prompt crafting</text>
+  <text x="600" y="218" font-family="Segoe UI, sans-serif" font-size="16" fill="#10b981">✓</text>
+  
+  <!-- Badge 3 - Locked -->
+  <g opacity="0.4">
+    <rect x="170" y="250" width="460" height="55" rx="8" fill="#0f172a"/>
+    <text x="200" y="283" font-family="Segoe UI, sans-serif" font-size="24">🔍</text>
+    <text x="240" y="273" font-family="Segoe UI, sans-serif" font-size="14" fill="#f8fafc" font-weight="600">Embedding Explorer</text>
+    <text x="240" y="290" font-family="Segoe UI, sans-serif" font-size="12" fill="#94a3b8">Discovered semantic search</text>
+    <text x="600" y="283" font-family="Segoe UI, sans-serif" font-size="16" fill="#94a3b8">🔒</text>
+  </g>
+  
+  <!-- Badge 4 - Locked -->
+  <g opacity="0.4">
+    <rect x="170" y="315" width="460" height="55" rx="8" fill="#0f172a"/>
+    <text x="200" y="348" font-family="Segoe UI, sans-serif" font-size="24">⚡</text>
+    <text x="240" y="338" font-family="Segoe UI, sans-serif" font-size="14" fill="#f8fafc" font-weight="600">Workflow Wizard</text>
+    <text x="240" y="355" font-family="Segoe UI, sans-serif" font-size="12" fill="#94a3b8">Built AI pipelines</text>
+    <text x="600" y="348" font-family="Segoe UI, sans-serif" font-size="16" fill="#94a3b8">🔒</text>
+  </g>
+  
+  <!-- Badge 5 - Locked -->
+  <g opacity="0.4">
+    <rect x="170" y="380" width="460" height="55" rx="8" fill="#0f172a"/>
+    <text x="200" y="413" font-family="Segoe UI, sans-serif" font-size="24">🏆</text>
+    <text x="240" y="403" font-family="Segoe UI, sans-serif" font-size="14" fill="#f8fafc" font-weight="600">Foundry Champion</text>
+    <text x="240" y="420" font-family="Segoe UI, sans-serif" font-size="12" fill="#94a3b8">Mastered Foundry Local</text>
+    <text x="600" y="413" font-family="Segoe UI, sans-serif" font-size="16" fill="#94a3b8">🔒</text>
+  </g>
+</svg>

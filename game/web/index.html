@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Foundry Local Learning Adventure</title>
+    <meta name="description" content="Learn AI development by playing a game! An interactive adventure teaching Microsoft Foundry Local and AI tools.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Header -->
+        <header class="game-header">
+            <div class="logo">
+                <span class="logo-icon">🎮</span>
+                <h1>Foundry Local Learning Adventure</h1>
+            </div>
+            <div class="player-stats" id="playerStats">
+                <span class="stat"><span class="stat-icon">⭐</span> <span id="totalPoints">0</span> pts</span>
+                <span class="stat"><span class="stat-icon">🏆</span> <span id="badgeCount">0</span>/5</span>
+            </div>
+        </header>
+
+        <!-- Welcome Screen -->
+        <div id="welcomeScreen" class="screen active">
+            <div class="welcome-content">
+                <div class="welcome-banner">
+                    <h2>🚀 Welcome, Future AI Developer!</h2>
+                    <p>Learn how to use Microsoft Foundry Local through a fun, interactive adventure.</p>
+                </div>
+                <div class="name-input-section">
+                    <label for="playerName">What should we call you?</label>
+                    <input type="text" id="playerName" placeholder="Enter your name" maxlength="20">
+                    <button class="btn btn-primary btn-large" onclick="startGame()">
+                        <span class="btn-icon">▶️</span> Start Adventure
+                    </button>
+                </div>
+                <div class="features-preview">
+                    <div class="feature">
+                        <span class="feature-icon">🎯</span>
+                        <span>5 Levels</span>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">🏆</span>
+                        <span>Earn Badges</span>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">🧙</span>
+                        <span>AI Mentor</span>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">💡</span>
+                        <span>Learn by Doing</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Menu Screen -->
+        <div id="menuScreen" class="screen">
+            <div class="menu-content">
+                <div class="greeting" id="playerGreeting"></div>
+                
+                <div class="level-grid">
+                    <h3>📚 Select a Level</h3>
+                    <div id="levelList" class="level-list"></div>
+                </div>
+
+                <div class="menu-actions">
+                    <button class="btn btn-secondary" onclick="showProgress()">
+                        <span class="btn-icon">📊</span> Progress
+                    </button>
+                    <button class="btn btn-secondary" onclick="showBadges()">
+                        <span class="btn-icon">🏆</span> Badges
+                    </button>
+                    <button class="btn btn-secondary" onclick="showHelp()">
+                        <span class="btn-icon">❓</span> Help
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level Screen -->
+        <div id="levelScreen" class="screen">
+            <div class="level-content">
+                <div class="level-header">
+                    <button class="btn btn-back" onclick="returnToMenu()">← Back</button>
+                    <h2 id="levelTitle"></h2>
+                    <span class="level-badge" id="levelReward"></span>
+                </div>
+                
+                <div class="level-body">
+                    <div class="level-description" id="levelDescription"></div>
+                    
+                    <div class="objective-box">
+                        <h4>🎯 Objective</h4>
+                        <p id="levelObjective"></p>
+                    </div>
+
+                    <div class="instructions-box">
+                        <h4>📋 Instructions</h4>
+                        <ol id="levelInstructions"></ol>
+                    </div>
+
+                    <div class="task-area" id="taskArea">
+                        <!-- Task-specific UI will be injected here -->
+                    </div>
+
+                    <div class="hint-section">
+                        <button class="btn btn-hint" onclick="showHint()">
+                            <span class="btn-icon">💡</span> Get Hint (<span id="hintsRemaining">3</span> left)
+                        </button>
+                        <div class="hint-display" id="hintDisplay"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Modal -->
+        <div id="progressModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>📊 Your Progress</h3>
+                    <button class="modal-close" onclick="closeModal('progressModal')">×</button>
+                </div>
+                <div class="modal-body" id="progressContent"></div>
+            </div>
+        </div>
+
+        <!-- Badges Modal -->
+        <div id="badgesModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>🏆 Your Badges</h3>
+                    <button class="modal-close" onclick="closeModal('badgesModal')">×</button>
+                </div>
+                <div class="modal-body" id="badgesContent"></div>
+            </div>
+        </div>
+
+        <!-- Help Modal -->
+        <div id="helpModal" class="modal">
+            <div class="modal-content modal-large">
+                <div class="modal-header">
+                    <h3>❓ How to Play</h3>
+                    <button class="modal-close" onclick="closeModal('helpModal')">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="help-section">
+                        <h4>🎮 Game Overview</h4>
+                        <p>Complete 5 levels to learn Microsoft Foundry Local! Each level teaches a new AI concept.</p>
+                    </div>
+                    <div class="help-section">
+                        <h4>📚 The Levels</h4>
+                        <ol>
+                            <li><strong>Meet the Model</strong> - Make your first AI call</li>
+                            <li><strong>Prompt Mastery</strong> - Write better prompts</li>
+                            <li><strong>Embeddings Explorer</strong> - Semantic search</li>
+                            <li><strong>Workflow Wizard</strong> - Build AI pipelines</li>
+                            <li><strong>Build Your Own Tool</strong> - Create AI tools</li>
+                        </ol>
+                    </div>
+                    <div class="help-section">
+                        <h4>💡 Tips</h4>
+                        <ul>
+                            <li>Complete levels in order to unlock new ones</li>
+                            <li>Use hints if you get stuck</li>
+                            <li>Earn badges and points for each level</li>
+                            <li>Your progress is saved automatically</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level Complete Modal -->
+        <div id="completeModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header celebration">
+                    <h3>🎉 Level Complete!</h3>
+                </div>
+                <div class="modal-body" id="completeContent"></div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="closeCompleteModal()">Continue</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mentor Chat -->
+        <div class="mentor-container" id="mentorContainer">
+            <div class="mentor-header" onclick="toggleMentor()">
+                <span class="mentor-icon">🧙</span>
+                <span class="mentor-name">Sage</span>
+                <span class="mentor-toggle" id="mentorToggle">▼</span>
+            </div>
+            <div class="mentor-body" id="mentorBody">
+                <div class="mentor-messages" id="mentorMessages"></div>
+                <div class="mentor-input">
+                    <input type="text" id="mentorQuestion" placeholder="Ask Sage anything..." onkeypress="handleMentorKeypress(event)">
+                    <button class="btn btn-mentor" onclick="askMentor()">Ask</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="game-footer">
+            <p>Built for learning Microsoft Foundry Local | 
+                <a href="https://github.com" target="_blank">GitHub</a> | 
+                <a href="https://learn.microsoft.com/azure/ai-studio/foundry-local" target="_blank">Foundry Docs</a>
+            </p>
+        </footer>
+    </div>
+
+    <script src="game-data.js"></script>
+    <script src="game-web.js"></script>
+</body>
+</html>

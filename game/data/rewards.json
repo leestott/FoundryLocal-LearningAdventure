@@ -1,0 +1,95 @@
+{
+  "badges": [
+    {
+      "id": "prompt_apprentice",
+      "name": "Prompt Apprentice",
+      "description": "Made your first successful AI model call",
+      "icon": "🎯",
+      "levelRequired": 1,
+      "points": 100
+    },
+    {
+      "id": "prompt_engineer",
+      "name": "Prompt Engineer",
+      "description": "Mastered the art of crafting effective prompts",
+      "icon": "✍️",
+      "levelRequired": 2,
+      "points": 150
+    },
+    {
+      "id": "embedding_explorer",
+      "name": "Embedding Explorer",
+      "description": "Discovered the power of semantic search with embeddings",
+      "icon": "🔍",
+      "levelRequired": 3,
+      "points": 200
+    },
+    {
+      "id": "workflow_wizard",
+      "name": "Workflow Wizard",
+      "description": "Built your first multi-step AI pipeline",
+      "icon": "⚡",
+      "levelRequired": 4,
+      "points": 250
+    },
+    {
+      "id": "foundry_champion",
+      "name": "Foundry Champion",
+      "description": "Completed all levels and mastered Foundry Local",
+      "icon": "🏆",
+      "levelRequired": 5,
+      "points": 300
+    }
+  ],
+  "achievements": [
+    {
+      "id": "first_steps",
+      "name": "First Steps",
+      "description": "Completed your first level",
+      "icon": "👣",
+      "condition": "complete_level_1"
+    },
+    {
+      "id": "halfway_hero",
+      "name": "Halfway Hero",
+      "description": "Completed 50% of all levels",
+      "icon": "🌟",
+      "condition": "complete_3_levels"
+    },
+    {
+      "id": "speed_learner",
+      "name": "Speed Learner",
+      "description": "Completed a level in under 5 minutes",
+      "icon": "⚡",
+      "condition": "fast_completion"
+    },
+    {
+      "id": "hint_free",
+      "name": "Hint-Free Hero",
+      "description": "Completed a level without using any hints",
+      "icon": "🧠",
+      "condition": "no_hints_used"
+    },
+    {
+      "id": "curious_mind",
+      "name": "Curious Mind",
+      "description": "Asked the mentor 10 questions",
+      "icon": "❓",
+      "condition": "mentor_questions_10"
+    },
+    {
+      "id": "master_graduate",
+      "name": "Master Graduate",
+      "description": "Completed all levels with all badges",
+      "icon": "🎓",
+      "condition": "all_complete"
+    }
+  ],
+  "pointMilestones": [
+    { "points": 100, "title": "Beginner", "message": "You're just getting started!" },
+    { "points": 250, "title": "Learner", "message": "You're making great progress!" },
+    { "points": 500, "title": "Practitioner", "message": "You're becoming skilled!" },
+    { "points": 750, "title": "Expert", "message": "You're almost a master!" },
+    { "points": 1000, "title": "Master", "message": "You've mastered Foundry Local!" }
+  ]
+}

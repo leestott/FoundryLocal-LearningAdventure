@@ -1,0 +1,118 @@
+# ═══════════════════════════════════════════════════════════════════
+# Foundry Local Learning Game - .gitignore
+# ═══════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────
+# Dependencies
+# ─────────────────────────────────────────────────────────────────────
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ─────────────────────────────────────────────────────────────────────
+# Environment & Secrets (CRITICAL - Never commit these!)
+# ─────────────────────────────────────────────────────────────────────
+.env
+.env.*
+.env.local
+.env.*.local
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+secrets/
+credentials/
+
+# API Keys & Tokens (common patterns)
+**/api_key*
+**/apikey*
+**/secret*
+**/*token*
+!src/**/*.js
+
+# ─────────────────────────────────────────────────────────────────────
+# IDE & Editor
+# ─────────────────────────────────────────────────────────────────────
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json.example
+.idea/
+*.swp
+*.swo
+*.sublime-*
+*.code-workspace
+.history/
+
+# ─────────────────────────────────────────────────────────────────────
+# OS Generated Files
+# ─────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ─────────────────────────────────────────────────────────────────────
+# Logs & Debugging
+# ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.npm/
+
+# ─────────────────────────────────────────────────────────────────────
+# Build Outputs
+# ─────────────────────────────────────────────────────────────────────
+dist/
+build/
+out/
+.next/
+.nuxt/
+coverage/
+.cache/
+
+# ─────────────────────────────────────────────────────────────────────
+# Temporary Files
+# ─────────────────────────────────────────────────────────────────────
+*.tmp
+*.temp
+*.bak
+*.backup
+temp/
+tmp/
+
+# ─────────────────────────────────────────────────────────────────────
+# Test Outputs
+# ─────────────────────────────────────────────────────────────────────
+coverage/
+.nyc_output/
+test-results/
+junit.xml
+playwright-report/
+test-results/
+
+# ─────────────────────────────────────────────────────────────────────
+# Playwright
+# ─────────────────────────────────────────────────────────────────────
+game/web/tests/test-results/
+game/web/tests/playwright-report/
+**/playwright-report/
+**/test-results/
+
+# ─────────────────────────────────────────────────────────────────────
+# Game-Specific
+# ─────────────────────────────────────────────────────────────────────
+# Player progress is intentionally tracked for personal use
+# If sharing publicly, users should reset their progress
+
+# Foundry Local cache (if any)
+.foundry/
+foundry-cache/

@@ -1,0 +1,225 @@
+{
+  "levels": [
+    {
+      "id": 1,
+      "title": "Meet the Model",
+      "description": "Welcome to Foundry Local! In this level, you'll learn how to call a local Small Language Model (SLM) and get your first AI response.",
+      "objective": "Call a local SLM using the Foundry Local SDK and print the response.",
+      "instructions": [
+        "The game will connect to your local Foundry model",
+        "You'll send a simple greeting prompt to the model",
+        "Read and understand the AI's response",
+        "Complete the task to earn your first badge!"
+      ],
+      "task": {
+        "type": "prompt_call",
+        "prompt": "Hello! Please introduce yourself and explain what you can help me with.",
+        "successCriteria": "Receive a valid response from the model"
+      },
+      "hints": [
+        "Make sure Foundry Local is running on your machine",
+        "The SDK handles the connection automatically",
+        "Don't worry if the response takes a moment - that's normal!"
+      ],
+      "reward": {
+        "badge": "Prompt Apprentice",
+        "points": 100,
+        "description": "You made your first AI call!"
+      },
+      "unlocked": true
+    },
+    {
+      "id": 2,
+      "title": "Prompt Mastery",
+      "description": "Great job! Now let's learn how to write better prompts. The quality of your prompt directly affects the quality of the AI's response.",
+      "objective": "Refine a poorly written prompt and compare the outputs to see the improvement.",
+      "instructions": [
+        "You'll be given a 'bad' prompt that's vague and unclear",
+        "Your task is to improve it using prompt engineering techniques",
+        "Compare the responses from both prompts",
+        "Learn what makes a prompt effective!"
+      ],
+      "task": {
+        "type": "prompt_comparison",
+        "badPrompt": "tell me stuff about coding",
+        "improvementTips": [
+          "Be specific about what you want to learn",
+          "Provide context about your skill level",
+          "Ask for examples or step-by-step explanations",
+          "Specify the programming language"
+        ],
+        "successCriteria": "Create an improved prompt that generates a more helpful response"
+      },
+      "hints": [
+        "Think about the 5 W's: Who, What, When, Where, Why",
+        "Specific prompts get specific answers",
+        "Try adding 'for a beginner' or 'with examples'"
+      ],
+      "reward": {
+        "badge": "Prompt Engineer",
+        "points": 150,
+        "description": "You mastered the art of prompt crafting!"
+      },
+      "unlocked": false
+    },
+    {
+      "id": 3,
+      "title": "Embeddings Explorer",
+      "description": "Embeddings are numerical representations of text that capture meaning. Let's explore how to use them for semantic search!",
+      "objective": "Generate embeddings and search a knowledge base to find the most relevant information.",
+      "instructions": [
+        "Learn what embeddings are and why they're useful",
+        "Generate an embedding for your search query",
+        "Search through a small knowledge base",
+        "Find the closest semantic match to your query"
+      ],
+      "task": {
+        "type": "embedding_search",
+        "knowledgeBase": [
+          {
+            "id": "kb1",
+            "text": "Foundry Local allows you to run AI models directly on your computer without needing an internet connection.",
+            "topic": "offline_ai"
+          },
+          {
+            "id": "kb2",
+            "text": "Prompt engineering is the practice of designing and refining inputs to get better outputs from AI models.",
+            "topic": "prompts"
+          },
+          {
+            "id": "kb3",
+            "text": "Embeddings convert text into numbers that computers can use to understand meaning and find similar content.",
+            "topic": "embeddings"
+          },
+          {
+            "id": "kb4",
+            "text": "Workflows in Foundry let you chain multiple AI operations together to create powerful pipelines.",
+            "topic": "workflows"
+          },
+          {
+            "id": "kb5",
+            "text": "The Foundry CLI provides command-line tools for managing models, running inferences, and debugging.",
+            "topic": "cli"
+          }
+        ],
+        "sampleQueries": [
+          "How do I use AI without internet?",
+          "What are numerical representations of text?",
+          "How do I make my prompts better?"
+        ],
+        "successCriteria": "Successfully find the most relevant knowledge base entry for a query"
+      },
+      "hints": [
+        "Embeddings capture semantic meaning, not just keywords",
+        "Similar concepts will have similar embedding vectors",
+        "Cosine similarity measures how close two embeddings are"
+      ],
+      "reward": {
+        "badge": "Embedding Explorer",
+        "points": 200,
+        "description": "You discovered the power of semantic search!"
+      },
+      "unlocked": false
+    },
+    {
+      "id": 4,
+      "title": "Workflow Wizard",
+      "description": "Time to level up! Workflows let you chain multiple AI operations together. Let's build your first pipeline!",
+      "objective": "Create and run a multi-step Foundry workflow that processes text through multiple stages.",
+      "instructions": [
+        "Understand what a workflow is and why it's useful",
+        "Design a simple 3-step pipeline",
+        "Execute each step and pass results to the next",
+        "See how workflows automate complex tasks"
+      ],
+      "task": {
+        "type": "workflow_creation",
+        "workflowSteps": [
+          {
+            "step": 1,
+            "name": "Summarize",
+            "description": "Take a long text and create a brief summary",
+            "inputType": "text",
+            "outputType": "summary"
+          },
+          {
+            "step": 2,
+            "name": "Extract Keywords",
+            "description": "Identify the main keywords from the summary",
+            "inputType": "summary",
+            "outputType": "keywords"
+          },
+          {
+            "step": 3,
+            "name": "Generate Questions",
+            "description": "Create study questions based on the keywords",
+            "inputType": "keywords",
+            "outputType": "questions"
+          }
+        ],
+        "sampleInput": "Artificial Intelligence (AI) is transforming how we work and live. Machine learning, a subset of AI, enables computers to learn from data without being explicitly programmed. Deep learning uses neural networks with many layers to process complex patterns. Natural Language Processing (NLP) helps computers understand human language. These technologies power everything from virtual assistants to medical diagnosis systems.",
+        "successCriteria": "Successfully run all three workflow steps and produce final output"
+      },
+      "hints": [
+        "Each step's output becomes the next step's input",
+        "Workflows save time by automating repetitive tasks",
+        "You can modify and extend workflows as needed"
+      ],
+      "reward": {
+        "badge": "Workflow Wizard",
+        "points": 250,
+        "description": "You created your first AI pipeline!"
+      },
+      "unlocked": false
+    },
+    {
+      "id": 5,
+      "title": "Build Your Own Tool",
+      "description": "The final challenge! Create a custom JavaScript function and integrate it as a tool that an AI agent can use.",
+      "objective": "Build a custom tool function and register it with a Foundry Local agent.",
+      "instructions": [
+        "Learn about AI agents and tool calling",
+        "Create a JavaScript function that performs a useful task",
+        "Register your function as a tool the AI can use",
+        "Watch the AI call your custom tool!"
+      ],
+      "task": {
+        "type": "tool_creation",
+        "toolExamples": [
+          {
+            "name": "calculate_tip",
+            "description": "Calculate a tip amount based on bill total and percentage",
+            "parameters": ["billAmount", "tipPercentage"],
+            "returns": "tipAmount"
+          },
+          {
+            "name": "format_date",
+            "description": "Convert a date string to a friendly format",
+            "parameters": ["dateString", "format"],
+            "returns": "formattedDate"
+          },
+          {
+            "name": "word_count",
+            "description": "Count words in a text string",
+            "parameters": ["text"],
+            "returns": "count"
+          }
+        ],
+        "successCriteria": "Create and register a custom tool that the AI successfully calls"
+      },
+      "hints": [
+        "Tools give AI agents real capabilities",
+        "Keep your function simple and well-documented",
+        "The AI needs clear descriptions to know when to use tools"
+      ],
+      "reward": {
+        "badge": "Foundry Champion",
+        "points": 300,
+        "description": "You've mastered Foundry Local! You're now a Foundry Champion!"
+      },
+      "unlocked": false
+    }
+  ],
+  "totalLevels": 5,
+  "version": "1.0.0"
+}

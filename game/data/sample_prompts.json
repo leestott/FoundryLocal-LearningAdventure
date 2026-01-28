@@ -1,0 +1,110 @@
+{
+  "examples": [
+    {
+      "name": "Basic Greeting",
+      "level": 1,
+      "prompt": "Hello! Please introduce yourself and explain what you can help me with.",
+      "purpose": "First interaction with an AI model - simple greeting and response",
+      "expected_behavior": "A friendly introduction explaining the model's capabilities"
+    },
+    {
+      "name": "Bad Prompt Example",
+      "level": 2,
+      "prompt": "tell me stuff about coding",
+      "purpose": "Demonstrates a vague, poorly structured prompt",
+      "issues": [
+        "Too vague - 'stuff' is not specific",
+        "No context about skill level",
+        "No specific topic or language",
+        "No format specification"
+      ]
+    },
+    {
+      "name": "Improved Prompt Example",
+      "level": 2,
+      "prompt": "As a beginner learning Python, can you explain how to create a simple function that takes two numbers and returns their sum? Please include a code example with comments.",
+      "purpose": "Shows how to write an effective, specific prompt",
+      "improvements": [
+        "Specified skill level (beginner)",
+        "Specified language (Python)",
+        "Clear task (create a function)",
+        "Specific requirements (two numbers, sum)",
+        "Requested format (code with comments)"
+      ]
+    },
+    {
+      "name": "Semantic Search Query",
+      "level": 3,
+      "prompt": "How do I run AI models without internet?",
+      "purpose": "Demonstrates how embeddings find semantically similar content",
+      "expected_match": "Foundry Local allows you to run AI models directly on your computer without needing an internet connection."
+    },
+    {
+      "name": "Workflow Step 1 - Summarize",
+      "level": 4,
+      "prompt": "Please provide a brief 2-3 sentence summary of the following text:\n\n[INPUT TEXT]",
+      "purpose": "First step in the workflow pipeline - condenses information",
+      "output_type": "summary"
+    },
+    {
+      "name": "Workflow Step 2 - Extract Keywords",
+      "level": 4,
+      "prompt": "Extract 5 main keywords from the following text. List them separated by commas:\n\n[SUMMARY FROM STEP 1]",
+      "purpose": "Second step - identifies key concepts",
+      "output_type": "keywords"
+    },
+    {
+      "name": "Workflow Step 3 - Generate Questions",
+      "level": 4,
+      "prompt": "Based on these keywords: [KEYWORDS FROM STEP 2]\n\nGenerate 3 study questions that would help someone learn these concepts.",
+      "purpose": "Third step - creates learning materials",
+      "output_type": "questions"
+    },
+    {
+      "name": "Tool Registration Prompt",
+      "level": 5,
+      "prompt": "You have access to a tool called \"add_numbers\" that adds two numbers together and returns the result. Please acknowledge that you can now use this tool and explain when you would use it.",
+      "purpose": "Demonstrates AI acknowledgment of tool availability",
+      "expected_behavior": "AI confirms tool access and explains use cases"
+    },
+    {
+      "name": "Mentor System Prompt",
+      "level": "all",
+      "prompt": "You are Sage, Your friendly Foundry Local guide. You are helping a student learn about Microsoft Foundry Local and AI development.\n\nYour personality traits: encouraging, patient, knowledgeable, fun.\n\nGuidelines:\n- Be encouraging and celebrate small wins\n- Explain concepts in simple, beginner-friendly terms\n- Use analogies and real-world examples\n- Keep responses concise but helpful\n- If asked about code, provide simple examples\n- If the student seems stuck, offer gentle hints\n- Maintain a fun, adventure-like atmosphere",
+      "purpose": "System prompt that defines the mentor's personality and behavior"
+    },
+    {
+      "name": "Concept Explanation Request",
+      "level": "all",
+      "prompt": "The player wants to understand: \"embeddings\"\n\nExplain this concept in simple, beginner-friendly terms. Use:\n- A brief definition (1 sentence)\n- A simple analogy or real-world example\n- Why it's useful in AI development\n\nKeep the total response under 5 sentences.",
+      "purpose": "Template for explaining AI concepts to beginners"
+    },
+    {
+      "name": "Hint Delivery",
+      "level": "all",
+      "prompt": "The player needs a hint for Level 3. The hint is: \"Embeddings capture semantic meaning, not just keywords\"\nDeliver this hint in an encouraging way, in 1-2 sentences.",
+      "purpose": "How hints are delivered with encouragement"
+    },
+    {
+      "name": "Level Completion Celebration",
+      "level": "all",
+      "prompt": "The player just completed Level 2: \"Prompt Mastery\"!\nThey earned the \"Prompt Engineer\" badge and 150 points.\nTime taken: 180 seconds. Hints used: 1.\nGive them an enthusiastic celebration message (2-3 sentences). Mention their achievement!",
+      "purpose": "Celebratory message template for level completion"
+    }
+  ],
+  "prompt_engineering_tips": {
+    "clarity": "Be specific about what you want",
+    "context": "Provide relevant background information",
+    "format": "Specify the desired output format",
+    "constraints": "Set boundaries (length, style, etc.)",
+    "examples": "Include examples when helpful",
+    "role": "Define the AI's role or persona"
+  },
+  "common_mistakes": [
+    "Being too vague ('tell me about stuff')",
+    "Missing context (no skill level mentioned)",
+    "No format guidance (just asking for information)",
+    "Asking multiple unrelated questions at once",
+    "Using ambiguous pronouns without context"
+  ]
+}

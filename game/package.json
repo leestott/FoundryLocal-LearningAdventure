@@ -1,0 +1,40 @@
+{
+  "name": "foundry-learning-game",
+  "version": "1.0.0",
+  "description": "An interactive JavaScript game to learn Microsoft Foundry Local AI tools",
+  "type": "module",
+  "main": "src/game.js",
+  "scripts": {
+    "start": "node src/game.js",
+    "dev": "node --watch src/game.js",
+    "test": "node tests/test-game.js",
+    "test:foundry": "pwsh -ExecutionPolicy Bypass -File tests/check-foundry.ps1",
+    "check": "node tests/test-game.js",
+    "reset": "node -e \"require('fs').writeFileSync('data/progress.json', JSON.stringify({player:{name:'',createdAt:'',lastPlayed:''},stats:{totalPoints:0,currentLevel:1,levelsCompleted:0,hintsUsed:0,mentorQuestions:0,totalPlayTime:0,fastestLevel:null,totalPromptsSent:0},levels:{'1':{completed:false,startedAt:null,completedAt:null,attempts:0,hintsUsed:0,timeSpent:0},'2':{completed:false,startedAt:null,completedAt:null,attempts:0,hintsUsed:0,timeSpent:0},'3':{completed:false,startedAt:null,completedAt:null,attempts:0,hintsUsed:0,timeSpent:0},'4':{completed:false,startedAt:null,completedAt:null,attempts:0,hintsUsed:0,timeSpent:0},'5':{completed:false,startedAt:null,completedAt:null,attempts:0,hintsUsed:0,timeSpent:0}},badges:[],achievements:[]}, null, 2))\""
+  },
+  "keywords": [
+    "foundry",
+    "foundry-local",
+    "ai",
+    "learning",
+    "game",
+    "education",
+    "microsoft",
+    "slm",
+    "llm",
+    "prompt-engineering",
+    "embeddings"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "bugs": {
+    "url": ""
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

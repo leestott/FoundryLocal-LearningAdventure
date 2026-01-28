@@ -1,0 +1,61 @@
+{
+  "player": {
+    "name": "",
+    "createdAt": "",
+    "lastPlayed": ""
+  },
+  "stats": {
+    "totalPoints": 0,
+    "currentLevel": 1,
+    "levelsCompleted": 0,
+    "hintsUsed": 0,
+    "mentorQuestions": 0,
+    "totalPlayTime": 0,
+    "fastestLevel": null,
+    "totalPromptsSent": 0
+  },
+  "levels": {
+    "1": {
+      "completed": false,
+      "startedAt": null,
+      "completedAt": null,
+      "attempts": 0,
+      "hintsUsed": 0,
+      "timeSpent": 0
+    },
+    "2": {
+      "completed": false,
+      "startedAt": null,
+      "completedAt": null,
+      "attempts": 0,
+      "hintsUsed": 0,
+      "timeSpent": 0
+    },
+    "3": {
+      "completed": false,
+      "startedAt": null,
+      "completedAt": null,
+      "attempts": 0,
+      "hintsUsed": 0,
+      "timeSpent": 0
+    },
+    "4": {
+      "completed": false,
+      "startedAt": null,
+      "completedAt": null,
+      "attempts": 0,
+      "hintsUsed": 0,
+      "timeSpent": 0
+    },
+    "5": {
+      "completed": false,
+      "startedAt": null,
+      "completedAt": null,
+      "attempts": 0,
+      "hintsUsed": 0,
+      "timeSpent": 0
+    }
+  },
+  "badges": [],
+  "achievements": []
+}
