@@ -20,7 +20,7 @@ The web version includes all 5 levels and works completely in your browser with 
 If you wish to add AI install foundry local and ensure its running on port 61341 or simply update this section of game.js
 Foundry Local binds to localhost (127.0.0.1) on a dynamically assigned port each time the service starts.
 
-
+```
  * Foundry Local Client - Handles communication with the local model
  */
 class FoundryLocalClient {
@@ -33,7 +33,7 @@ class FoundryLocalClient {
         this.azureConfig = options.azureConfig || null;
         this.autoDiscoverPort = options.autoDiscoverPort !== false;
         this.commonPorts = options.commonPorts || [61341, 5272, 51319, 5000, 8080];
-
+```
 ---
 
 ## 📋 Table of Contents
