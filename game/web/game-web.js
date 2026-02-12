@@ -2,13 +2,13 @@
    Foundry Local Learning Adventure - Web Game Engine
    ═══════════════════════════════════════════════════════════════════ */
 
-// Foundry Local Connection State
+// Foundry Local Connection State Foundry Local Starts on Dynamic ports check foundry service status for port ID
 let foundryConnection = {
     connected: false,
     baseUrl: null,
     model: null,
     availableModels: [],
-    commonPorts: [61341, 5272, 5000, 8080]
+    commonPorts: [61341, 5272, 51319, 5000, 8080]
 };
 
 // Game State
