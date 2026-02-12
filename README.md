@@ -130,7 +130,8 @@ Choose how you want to play:
 |--------|----------|-------------|
 | **🌐 Web App GitHub Pages No Foundry Local** | Quick start, no install | Simulated |
 | **🌐 Web App GitHub Pages Foundry Local Installed** | Quick start, no install | Real AI |
-| **🌐 Web App local Machine** | Quick start, no install | Real AI |
+ **🌐 Web App local Machine No Foundry Local Installed ** | Quick start, no install | Simulated |
+| **🌐 Web App local Machine Foundry Local Installed ** | Quick start, no install | Real AI |
 | **💻 CLI (Terminal)** | Full experience with Foundry Local | Real AI |
 
 ---
