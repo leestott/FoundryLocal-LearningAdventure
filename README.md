@@ -17,22 +17,18 @@
 
 The web version includes all 5 levels and works completely in your browser with simulated AI responses.
 
-If you wish to add AI install foundry local and ensure its running on port 61341 or simply update this section of game.js
-Foundry Local binds to localhost (127.0.0.1) on a dynamically assigned port each time the service starts.
+For the full AI experience, install Foundry Local and start a model. **No port configuration needed** — the game automatically discovers Foundry Local's dynamic port using a 3-tier strategy:
 
-```
- * Foundry Local Client - Handles communication with the local model
- */
-class FoundryLocalClient {
-    constructor(options = {}) {
-        this.baseUrl = options.baseUrl || 'http://127.0.0.1:61341';
-        this.model = options.model || 'Phi-3.5-mini-instruct-generic-cpu:1';
-        this.initialized = false;
-        this.connectionMode = 'demo'; // 'local', 'azure', or 'demo'
-        this.availableModels = [];
-        this.azureConfig = options.azureConfig || null;
-        this.autoDiscoverPort = options.autoDiscoverPort !== false;
-        this.commonPorts = options.commonPorts || [61341, 5272, 51319, 5000, 8080];
+1. **CLI Discovery** — Runs `foundry service status` to find the active endpoint
+2. **Configured URL** — Tries the `baseUrl` from `config.json`
+3. **Port Scanning** — Falls back to scanning common ports
+
+```bash
+# Install Foundry Local
+winget install Microsoft.FoundryLocal
+
+# Start a model (the game finds the port automatically)
+foundry model run Phi-4
 ```
 ---
 
@@ -114,8 +110,8 @@ The easiest way to play is directly in your browser. The web version:
 | No installation | ✅ | ❌ |
 | Mobile support | ✅ | ❌ |
 | Share with friends | ✅ | ❌ |
-| Real AI responses | ✅ | ✅ | Requires Foundry Local Installed
-| Foundry Local | ✅ | ✅ |
+| Real AI responses | ✅ (requires Foundry Local) | ✅ (requires Foundry Local) |
+| Auto port discovery | ✅ | ✅ |
 | Full CLI experience | ❌ | ✅ |
 
 **Recommendation**: Start with the **web version** to learn the concepts, then try the **terminal version** with Foundry Local for real AI interactions!
@@ -691,6 +687,8 @@ For the **full AI experience** with real model responses, use the Node.js termin
 4. **Keep that terminal open**
 5. Start the game in a **different terminal**
 
+> **Note**: Foundry Local uses a dynamic port that changes each time it starts. The game automatically discovers the correct port via `foundry service status`. If that fails, it scans common ports (61341, 5272, 51319, 5000, 8080). You do **not** need to configure the port manually.
+
 ---
 
 ### "Cannot find module" or "MODULE_NOT_FOUND"
@@ -854,8 +852,11 @@ Edit `config.json` to customize:
 ```json
 {
   "foundryLocal": {
-    "baseUrl": "http://localhost:5272",
-    "defaultModel": "Phi-4"
+    "baseUrl": "http://127.0.0.1:5272",
+    "defaultModel": "Phi-4",
+    "autoDiscoverPort": true,
+    "useCliDiscovery": true,
+    "commonPorts": [61341, 5272, 51319, 5000, 8080]
   },
   "azureFoundry": {
     "enabled": false,
@@ -877,9 +878,11 @@ The game automatically detects available AI services:
 
 | Priority | Mode | Description |
 |----------|------|-------------|
-| 1 | **Foundry Local** | Uses local AI model (default) |
+| 1 | **Foundry Local** | Uses local AI model (auto-discovers dynamic port via CLI) |
 | 2 | **Azure OpenAI** | Uses Azure cloud if configured |
 | 3 | **Demo Mode** | Simulated responses (fallback) |
+
+> **Dynamic Port Discovery**: Foundry Local assigns a different port each time it starts. The game automatically discovers the correct port by running `foundry service status`, then falls back to scanning common ports. No manual port configuration is needed.
 
 ### Using Azure OpenAI (Cloud)
 
@@ -902,7 +905,7 @@ To use Azure OpenAI instead of local models:
 
 ### Common Changes
 
-- **Different port**: Change `baseUrl` if Foundry runs elsewhere
+- **Port discovery**: The game auto-discovers Foundry Local's dynamic port. Set `autoDiscoverPort: false` in `config.json` to disable and use a fixed `baseUrl` instead
 - **Different model**: Change `defaultModel` to your preferred model
 - **More hints**: Increase `maxHintsPerLevel`
 

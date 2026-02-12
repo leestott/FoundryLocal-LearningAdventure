@@ -91,7 +91,7 @@ Open http://localhost:8080
 |---------|---------|-----|
 | No installation | ✅ | ❌ |
 | Mobile support | ✅ | ❌ |
-| Real AI (Foundry Local) | ❌ | ✅ |
+| Real AI (Foundry Local) | ✅ (auto port discovery) | ✅ (auto port discovery) |
 | Offline play | ✅ | ✅ |
 
 ---

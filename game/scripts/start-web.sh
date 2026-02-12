@@ -31,6 +31,40 @@ print_header() {
     echo ""
 }
 
+discover_foundry_port() {
+    echo -e "${YELLOW}[*] Discovering Foundry Local port...${NC}"
+    local port_file="$WEB_ROOT/foundry-port.json"
+
+    # Try CLI-based discovery first (handles dynamic ports)
+    if command -v foundry &> /dev/null; then
+        local cli_output
+        cli_output=$(foundry service status 2>&1)
+        local discovered_port
+        discovered_port=$(echo "$cli_output" | grep -oP 'https?://(?:127\.0\.0\.1|localhost):\K\d+' | head -1)
+        if [ -n "$discovered_port" ]; then
+            if curl -s --max-time 3 "http://127.0.0.1:$discovered_port/v1/models" > /dev/null 2>&1; then
+                echo -e "${GREEN}[OK] Foundry Local detected on port $discovered_port (via CLI)${NC}"
+                echo "{\"port\": $discovered_port, \"discoveredAt\": \"$(date -Iseconds)\"}" > "$port_file"
+                return 0
+            fi
+        fi
+    fi
+
+    # Fall back to scanning common ports
+    for port in 61341 5272 51319 5000 8080; do
+        if curl -s --max-time 2 "http://127.0.0.1:$port/v1/models" > /dev/null 2>&1; then
+            echo -e "${GREEN}[OK] Foundry Local detected on port $port${NC}"
+            echo "{\"port\": $port, \"discoveredAt\": \"$(date -Iseconds)\"}" > "$port_file"
+            return 0
+        fi
+    done
+
+    echo -e "${YELLOW}[!] Foundry Local not detected - web app will run in demo mode${NC}"
+    # Remove stale config if it exists
+    rm -f "$port_file"
+    return 1
+}
+
 start_server() {
     local port=8080
     local url="http://localhost:$port"
@@ -108,4 +142,5 @@ start_server() {
 
 # Main execution
 print_header
+discover_foundry_port || true
 start_server

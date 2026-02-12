@@ -58,7 +58,19 @@ check_node() {
 check_foundry() {
     echo -e "${YELLOW}[*] Checking for Foundry Local service...${NC}"
     
-    # Try multiple common ports
+    # Try CLI-based discovery first (handles dynamic ports)
+    if command -v foundry &> /dev/null; then
+        FOUNDRY_OUTPUT=$(foundry service status 2>&1)
+        DISCOVERED_PORT=$(echo "$FOUNDRY_OUTPUT" | grep -oP 'https?://(?:127\.0\.0\.1|localhost):\K\d+' | head -1)
+        if [ -n "$DISCOVERED_PORT" ]; then
+            if curl -s --max-time 3 "http://127.0.0.1:$DISCOVERED_PORT/v1/models" > /dev/null 2>&1; then
+                echo -e "${GREEN}[OK] Foundry Local is running on port $DISCOVERED_PORT (discovered via CLI)!${NC}"
+                return 0
+            fi
+        fi
+    fi
+    
+    # Fall back to scanning common ports
     for port in 61341 5272 5000 8080; do
         if curl -s --max-time 2 http://localhost:$port/v1/models > /dev/null 2>&1; then
             echo -e "${GREEN}[OK] Foundry Local is running on port $port!${NC}"

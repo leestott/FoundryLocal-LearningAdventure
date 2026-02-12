@@ -7,6 +7,7 @@ import { createInterface } from 'readline';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 import { LevelManager, TaskHandler } from './levels.js';
 import { Mentor } from './mentor.js';
 
@@ -68,17 +69,50 @@ class FoundryLocalClient {
     }
 
     /**
+     * Discover Foundry Local port using the CLI
+     * Runs 'foundry service status' and parses the endpoint URL
+     */
+    discoverPortViaCLI() {
+        try {
+            const output = execSync('foundry service status', {
+                timeout: 5000,
+                encoding: 'utf-8',
+                stdio: ['pipe', 'pipe', 'pipe']
+            });
+            // Parse URL from CLI output (e.g. "http://127.0.0.1:47183" or "http://localhost:47183")
+            const urlMatch = output.match(/https?:\/\/(?:127\.0\.0\.1|localhost):(\d+)/i);
+            if (urlMatch) {
+                const port = parseInt(urlMatch[1], 10);
+                console.log(`    Discovered Foundry Local on port ${port} via CLI`);
+                return `http://127.0.0.1:${port}`;
+            }
+        } catch (error) {
+            // CLI not available or service not running
+        }
+        return null;
+    }
+
+    /**
      * Try connecting to Foundry Local
      */
     async tryFoundryLocal() {
-        // First try the configured URL
+        // First try CLI-based discovery for dynamic ports
+        if (this.autoDiscoverPort) {
+            const cliUrl = this.discoverPortViaCLI();
+            if (cliUrl && await this.tryFoundryUrl(cliUrl)) {
+                this.baseUrl = cliUrl;
+                return true;
+            }
+        }
+
+        // Then try the configured URL
         if (await this.tryFoundryUrl(this.baseUrl)) {
             return true;
         }
 
-        // Auto-discover port if enabled
+        // Fall back to scanning common ports
         if (this.autoDiscoverPort) {
-            console.log('    Trying alternative ports...');
+            console.log('    Scanning common ports...');
             for (const port of this.commonPorts) {
                 const url = `http://127.0.0.1:${port}`;
                 if (url !== this.baseUrl && await this.tryFoundryUrl(url)) {

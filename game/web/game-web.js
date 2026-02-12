@@ -2,7 +2,7 @@
    Foundry Local Learning Adventure - Web Game Engine
    ═══════════════════════════════════════════════════════════════════ */
 
-// Foundry Local Connection State Foundry Local Starts on Dynamic ports check foundry service status for port ID
+// Foundry Local Connection State - supports dynamic port discovery
 let foundryConnection = {
     connected: false,
     baseUrl: null,
@@ -34,6 +34,39 @@ let gameState = {
 async function checkFoundryConnection() {
     console.log('[Foundry] Checking for Foundry Local...');
     
+    // First, try to read the port discovered by the start script
+    const discoveredPort = await readDiscoveredPort();
+    if (discoveredPort) {
+        const url = `http://127.0.0.1:${discoveredPort}`;
+        console.log(`[Foundry] Trying CLI-discovered port ${discoveredPort}...`);
+        try {
+            const response = await fetch(`${url}/v1/models`, {
+                signal: AbortSignal.timeout(2000)
+            });
+            if (response.ok) {
+                const data = await response.json();
+                foundryConnection.connected = true;
+                foundryConnection.baseUrl = url;
+                foundryConnection.availableModels = data.data?.map(m => m.id) || [];
+                
+                const chatModel = foundryConnection.availableModels.find(m => 
+                    m.toLowerCase().includes('instruct') || 
+                    m.toLowerCase().includes('chat') ||
+                    m.toLowerCase().includes('phi')
+                );
+                foundryConnection.model = chatModel || foundryConnection.availableModels[0];
+                
+                console.log(`[Foundry] Connected to ${url} (discovered via CLI)`);
+                console.log(`[Foundry] Using model: ${foundryConnection.model}`);
+                updateConnectionStatus();
+                return true;
+            }
+        } catch (error) {
+            // Discovered port didn't work, continue scanning
+        }
+    }
+
+    // Fall back to scanning common ports
     for (const port of foundryConnection.commonPorts) {
         const url = `http://127.0.0.1:${port}`;
         try {
@@ -69,6 +102,30 @@ async function checkFoundryConnection() {
     foundryConnection.connected = false;
     updateConnectionStatus();
     return false;
+}
+
+/**
+ * Try to read the Foundry Local port discovered by the start script.
+ * The start-web scripts run 'foundry service status' and write the port
+ * to foundry-port.json so the browser can find it.
+ */
+async function readDiscoveredPort() {
+    try {
+        const response = await fetch('foundry-port.json', {
+            signal: AbortSignal.timeout(1000),
+            cache: 'no-store'
+        });
+        if (response.ok) {
+            const data = await response.json();
+            if (data.port && Number.isInteger(data.port) && data.port > 0 && data.port <= 65535) {
+                console.log(`[Foundry] Found discovered port config: ${data.port}`);
+                return data.port;
+            }
+        }
+    } catch (error) {
+        // Config file not available - that's fine, we'll scan ports
+    }
+    return null;
 }
 
 function updateConnectionStatus() {

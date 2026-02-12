@@ -65,7 +65,30 @@ function Test-NodeInstalled {
 function Test-FoundryLocalRunning {
     Write-ColorOutput "[*] Checking for Foundry Local service..." "Yellow"
     
-    # Try multiple common ports
+    # Try CLI-based discovery first (handles dynamic ports)
+    try {
+        $cliOutput = foundry service status 2>&1 | Out-String
+        if ($cliOutput -match 'https?://(?:127\.0\.0\.1|localhost):(\d+)') {
+            $discoveredPort = $Matches[1]
+            try {
+                $response = Invoke-WebRequest -Uri "http://127.0.0.1:$discoveredPort/v1/models" -TimeoutSec 3 -ErrorAction SilentlyContinue
+                if ($response.StatusCode -eq 200) {
+                    Write-ColorOutput "[OK] Foundry Local is running on port $discoveredPort (discovered via CLI)!" "Green"
+                    $models = ($response.Content | ConvertFrom-Json).data
+                    if ($models) {
+                        Write-ColorOutput "   Available models: $($models.id -join ', ')" "Cyan"
+                    }
+                    return $true
+                }
+            } catch {
+                # Discovered port didn't respond, continue scanning
+            }
+        }
+    } catch {
+        # Foundry CLI not available, fall back to port scanning
+    }
+    
+    # Fall back to scanning common ports
     $ports = @(61341, 5272, 5000, 8080)
     
     foreach ($port in $ports) {

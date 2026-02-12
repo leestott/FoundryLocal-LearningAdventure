@@ -31,6 +31,51 @@ function Write-Header {
     Write-Host ""
 }
 
+function Discover-FoundryPort {
+    Write-ColorOutput "[*] Discovering Foundry Local port..." "Yellow"
+    $portFile = Join-Path $WebRoot "foundry-port.json"
+
+    # Try CLI-based discovery first (handles dynamic ports)
+    try {
+        $cliOutput = foundry service status 2>&1 | Out-String
+        if ($cliOutput -match 'https?://(?:127\.0\.0\.1|localhost):(\d+)') {
+            $discoveredPort = [int]$Matches[1]
+            try {
+                $response = Invoke-WebRequest -Uri "http://127.0.0.1:$discoveredPort/v1/models" -TimeoutSec 3 -ErrorAction SilentlyContinue
+                if ($response.StatusCode -eq 200) {
+                    Write-ColorOutput "[OK] Foundry Local detected on port $discoveredPort (via CLI)" "Green"
+                    @{ port = $discoveredPort; discoveredAt = (Get-Date -Format o) } | ConvertTo-Json | Set-Content $portFile -Encoding UTF8
+                    return $discoveredPort
+                }
+            } catch {
+                # Discovered port not responding
+            }
+        }
+    } catch {
+        # Foundry CLI not available
+    }
+
+    # Fall back to scanning common ports
+    $ports = @(61341, 5272, 51319, 5000, 8080)
+    foreach ($port in $ports) {
+        try {
+            $response = Invoke-WebRequest -Uri "http://127.0.0.1:$port/v1/models" -TimeoutSec 2 -ErrorAction SilentlyContinue
+            if ($response.StatusCode -eq 200) {
+                Write-ColorOutput "[OK] Foundry Local detected on port $port" "Green"
+                @{ port = $port; discoveredAt = (Get-Date -Format o) } | ConvertTo-Json | Set-Content $portFile -Encoding UTF8
+                return $port
+            }
+        } catch {
+            # Try next port
+        }
+    }
+
+    Write-ColorOutput "[!] Foundry Local not detected - web app will run in demo mode" "Yellow"
+    # Remove stale config if it exists
+    if (Test-Path $portFile) { Remove-Item $portFile -Force }
+    return $null
+}
+
 function Test-Command {
     param([string]$Command)
     try {
@@ -114,4 +159,5 @@ function Start-WebServer {
 
 # Main execution
 Write-Header
+Discover-FoundryPort | Out-Null
 Start-WebServer
