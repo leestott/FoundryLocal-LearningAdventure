@@ -75,7 +75,7 @@ You don't need any prior AI experience! Just follow along, complete challenges, 
 
 ## 🎮 Play Online (GitHub Pages)
 
-### 🌐 No Installation Required!
+### 🌐 Install Foundry Local on your machine for the enhanced AI 
 
 The easiest way to play is directly in your browser. The web version:
 
@@ -97,8 +97,8 @@ The easiest way to play is directly in your browser. The web version:
 | No installation | ✅ | ❌ |
 | Mobile support | ✅ | ❌ |
 | Share with friends | ✅ | ❌ |
-| Real AI responses | ❌ | ✅ |
-| Foundry Local | ❌ | ✅ |
+| Real AI responses | ✅ | ✅ | Requires Foundry Local Installed
+| Foundry Local | ✅ | ✅ |
 | Full CLI experience | ❌ | ✅ |
 
 **Recommendation**: Start with the **web version** to learn the concepts, then try the **terminal version** with Foundry Local for real AI interactions!
@@ -275,7 +275,7 @@ This downloads all required packages. You only need to do this once.
 
 ---
 
-### Step 4: (Optional) Install Foundry Local
+### Step 4: For the Interactive AI Install Foundry Local
 
 The game works **without** Foundry Local (in demo mode), but for the full AI experience:
 
