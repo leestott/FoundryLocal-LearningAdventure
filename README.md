@@ -128,7 +128,9 @@ Choose how you want to play:
 
 | Option | Best For | AI Responses |
 |--------|----------|-------------|
-| **🌐 Web App** | Quick start, no install | Simulated |
+| **🌐 Web App GitHub Pages No Foundry Local** | Quick start, no install | Simulated |
+| **🌐 Web App GitHub Pages Foundry Local Installed** | Quick start, no install | Real AI |
+| **🌐 Web App local Machine** | Quick start, no install | Real AI |
 | **💻 CLI (Terminal)** | Full experience with Foundry Local | Real AI |
 
 ---
