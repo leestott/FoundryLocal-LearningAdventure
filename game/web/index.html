@@ -9,26 +9,37 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
 </head>
 <body>
-    <div class="game-container">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <div class="game-container" role="main" id="main-content">
+        <!-- Mentor Message Popup -->
+        <div class="mentor-message-popup" id="mentorMessagePopup" style="display: none;">
+            <div class="popup-header">
+                <span>🧙</span>
+                <span>Sage</span>
+            </div>
+            <div class="popup-message" id="popupMessageText"></div>
+        </div>
+
         <!-- Header -->
-        <header class="game-header">
+        <header class="game-header" role="banner">
             <div class="logo">
-                <span class="logo-icon">🎮</span>
+                <span class="logo-icon" aria-hidden="true">🎮</span>
                 <h1>Foundry Local Learning Adventure</h1>
             </div>
             <div class="header-right">
-                <div id="connectionStatus" class="connection-status">
+                <div id="connectionStatus" class="connection-status" role="status" aria-live="polite" aria-label="Connection status">
                     <span class="status-checking">⏳ Checking...</span>
                 </div>
-                <div class="player-stats" id="playerStats">
-                    <span class="stat"><span class="stat-icon">⭐</span> <span id="totalPoints">0</span> pts</span>
-                    <span class="stat"><span class="stat-icon">🏆</span> <span id="badgeCount">0</span>/5</span>
+                <div class="player-stats" id="playerStats" aria-label="Player statistics">
+                    <span class="stat" aria-label="Total points"><span class="stat-icon" aria-hidden="true">⭐</span> <span id="totalPoints">0</span> pts</span>
+                    <span class="stat" aria-label="Badges earned"><span class="stat-icon" aria-hidden="true">🏆</span> <span id="badgeCount">0</span>/5</span>
                 </div>
             </div>
         </header>
 
         <!-- Welcome Screen -->
-        <div id="welcomeScreen" class="screen active">
+        <div id="welcomeScreen" class="screen active" role="region" aria-label="Welcome screen">
             <div class="welcome-content">
                 <div class="welcome-banner">
                     <h2>🚀 Welcome, Future AI Developer!</h2>
@@ -36,26 +47,26 @@
                 </div>
                 <div class="name-input-section">
                     <label for="playerName">What should we call you?</label>
-                    <input type="text" id="playerName" placeholder="Enter your name" maxlength="20">
-                    <button class="btn btn-primary btn-large" onclick="startGame()">
-                        <span class="btn-icon">▶️</span> Start Adventure
+                    <input type="text" id="playerName" placeholder="Enter your name" maxlength="20" aria-required="true" autocomplete="name">
+                    <button class="btn btn-primary btn-large" onclick="startGame()" aria-label="Start the adventure">
+                        <span class="btn-icon" aria-hidden="true">▶️</span> Start Adventure
                     </button>
                 </div>
-                <div class="features-preview">
-                    <div class="feature">
-                        <span class="feature-icon">🎯</span>
+                <div class="features-preview" role="list" aria-label="Game features">
+                    <div class="feature" role="listitem">
+                        <span class="feature-icon" aria-hidden="true">🎯</span>
                         <span>5 Levels</span>
                     </div>
-                    <div class="feature">
-                        <span class="feature-icon">🏆</span>
+                    <div class="feature" role="listitem">
+                        <span class="feature-icon" aria-hidden="true">🏆</span>
                         <span>Earn Badges</span>
                     </div>
-                    <div class="feature">
-                        <span class="feature-icon">🧙</span>
+                    <div class="feature" role="listitem">
+                        <span class="feature-icon" aria-hidden="true">🧙</span>
                         <span>AI Mentor</span>
                     </div>
-                    <div class="feature">
-                        <span class="feature-icon">💡</span>
+                    <div class="feature" role="listitem">
+                        <span class="feature-icon" aria-hidden="true">💡</span>
                         <span>Learn by Doing</span>
                     </div>
                 </div>
@@ -63,93 +74,93 @@
         </div>
 
         <!-- Main Menu Screen -->
-        <div id="menuScreen" class="screen">
+        <div id="menuScreen" class="screen" role="region" aria-label="Main menu">
             <div class="menu-content">
-                <div class="greeting" id="playerGreeting"></div>
+                <div class="greeting" id="playerGreeting" role="status" aria-live="polite"></div>
                 
                 <div class="level-grid">
                     <h3>📚 Select a Level</h3>
-                    <div id="levelList" class="level-list"></div>
+                    <div id="levelList" class="level-list" role="list" aria-label="Available levels"></div>
                 </div>
 
-                <div class="menu-actions">
-                    <button class="btn btn-secondary" onclick="showProgress()">
-                        <span class="btn-icon">📊</span> Progress
+                <div class="menu-actions" role="navigation" aria-label="Menu actions">
+                    <button class="btn btn-secondary" onclick="showProgress()" aria-label="View your progress">
+                        <span class="btn-icon" aria-hidden="true">📊</span> Progress
                     </button>
-                    <button class="btn btn-secondary" onclick="showBadges()">
-                        <span class="btn-icon">🏆</span> Badges
+                    <button class="btn btn-secondary" onclick="showBadges()" aria-label="View earned badges">
+                        <span class="btn-icon" aria-hidden="true">🏆</span> Badges
                     </button>
-                    <button class="btn btn-secondary" onclick="showHelp()">
-                        <span class="btn-icon">❓</span> Help
+                    <button class="btn btn-secondary" onclick="showHelp()" aria-label="Get help">
+                        <span class="btn-icon" aria-hidden="true">❓</span> Help
                     </button>
                 </div>
             </div>
         </div>
 
         <!-- Level Screen -->
-        <div id="levelScreen" class="screen">
+        <div id="levelScreen" class="screen" role="region" aria-label="Level content">
             <div class="level-content">
                 <div class="level-header">
-                    <button class="btn btn-back" onclick="returnToMenu()">← Back</button>
+                    <button class="btn btn-back" onclick="returnToMenu()" aria-label="Return to main menu">← Back</button>
                     <h2 id="levelTitle"></h2>
-                    <span class="level-badge" id="levelReward"></span>
+                    <span class="level-badge" id="levelReward" aria-label="Level reward"></span>
                 </div>
                 
                 <div class="level-body">
                     <div class="level-description" id="levelDescription"></div>
                     
-                    <div class="objective-box">
-                        <h4>🎯 Objective</h4>
+                    <div class="objective-box" role="region" aria-labelledby="objectiveHeading">
+                        <h4 id="objectiveHeading">🎯 Objective</h4>
                         <p id="levelObjective"></p>
                     </div>
 
-                    <div class="instructions-box">
-                        <h4>📋 Instructions</h4>
+                    <div class="instructions-box" role="region" aria-labelledby="instructionsHeading">
+                        <h4 id="instructionsHeading">📋 Instructions</h4>
                         <ol id="levelInstructions"></ol>
                     </div>
 
-                    <div class="task-area" id="taskArea">
+                    <div class="task-area" id="taskArea" role="region" aria-label="Task area">
                         <!-- Task-specific UI will be injected here -->
                     </div>
 
                     <div class="hint-section">
-                        <button class="btn btn-hint" onclick="showHint()">
-                            <span class="btn-icon">💡</span> Get Hint (<span id="hintsRemaining">3</span> left)
+                        <button class="btn btn-hint" onclick="showHint()" aria-label="Get a hint">
+                            <span class="btn-icon" aria-hidden="true">💡</span> Get Hint (<span id="hintsRemaining">3</span> left)
                         </button>
-                        <div class="hint-display" id="hintDisplay"></div>
+                        <div class="hint-display" id="hintDisplay" role="status" aria-live="polite"></div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Progress Modal -->
-        <div id="progressModal" class="modal">
+        <div id="progressModal" class="modal" role="dialog" aria-labelledby="progressModalTitle" aria-modal="true">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>📊 Your Progress</h3>
-                    <button class="modal-close" onclick="closeModal('progressModal')">×</button>
+                    <h3 id="progressModalTitle">📊 Your Progress</h3>
+                    <button class="modal-close" onclick="closeModal('progressModal')" aria-label="Close progress modal">×</button>
                 </div>
                 <div class="modal-body" id="progressContent"></div>
             </div>
         </div>
 
         <!-- Badges Modal -->
-        <div id="badgesModal" class="modal">
+        <div id="badgesModal" class="modal" role="dialog" aria-labelledby="badgesModalTitle" aria-modal="true">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>🏆 Your Badges</h3>
-                    <button class="modal-close" onclick="closeModal('badgesModal')">×</button>
+                    <h3 id="badgesModalTitle">🏆 Your Badges</h3>
+                    <button class="modal-close" onclick="closeModal('badgesModal')" aria-label="Close badges modal">×</button>
                 </div>
                 <div class="modal-body" id="badgesContent"></div>
             </div>
         </div>
 
         <!-- Help Modal -->
-        <div id="helpModal" class="modal">
+        <div id="helpModal" class="modal" role="dialog" aria-labelledby="helpModalTitle" aria-modal="true">
             <div class="modal-content modal-large">
                 <div class="modal-header">
-                    <h3>❓ How to Play</h3>
-                    <button class="modal-close" onclick="closeModal('helpModal')">×</button>
+                    <h3 id="helpModalTitle">❓ How to Play</h3>
+                    <button class="modal-close" onclick="closeModal('helpModal')" aria-label="Close help modal">×</button>
                 </div>
                 <div class="modal-body">
                     <div class="help-section">
@@ -180,30 +191,41 @@
         </div>
 
         <!-- Level Complete Modal -->
-        <div id="completeModal" class="modal">
+        <div id="completeModal" class="modal" role="dialog" aria-labelledby="completeModalTitle" aria-modal="true">
             <div class="modal-content">
                 <div class="modal-header celebration">
-                    <h3>🎉 Level Complete!</h3>
+                    <h3 id="completeModalTitle">🎉 Level Complete!</h3>
                 </div>
                 <div class="modal-body" id="completeContent"></div>
                 <div class="modal-footer">
-                    <button class="btn btn-primary" onclick="closeCompleteModal()">Continue</button>
+                    <button class="btn btn-primary" onclick="closeCompleteModal()" aria-label="Continue to next level">Continue</button>
                 </div>
             </div>
         </div>
 
-        <!-- Mentor Chat -->
-        <div class="mentor-container" id="mentorContainer">
-            <div class="mentor-header" onclick="toggleMentor()">
-                <span class="mentor-icon">🧙</span>
-                <span class="mentor-name">Sage</span>
-                <span class="mentor-toggle" id="mentorToggle">▼</span>
-            </div>
-            <div class="mentor-body" id="mentorBody">
-                <div class="mentor-messages" id="mentorMessages"></div>
-                <div class="mentor-input">
-                    <input type="text" id="mentorQuestion" placeholder="Ask Sage anything..." onkeypress="handleMentorKeypress(event)">
-                    <button class="btn btn-mentor" onclick="askMentor()">Ask</button>
+        <!-- Mentor Chat Modal -->
+        <button class="mentor-fab" onclick="openMentorModal()" aria-label="Open AI Mentor Sage" id="mentorFab">
+            🧙
+            <span class="notification-badge" id="mentorNotificationBadge" style="display: none;">1</span>
+        </button>
+        
+        <div class="mentor-modal" id="mentorModal" role="dialog" aria-labelledby="mentorModalTitle" aria-modal="true">
+            <div class="mentor-modal-content">
+                <div class="mentor-modal-header">
+                    <div class="mentor-modal-title" id="mentorModalTitle">
+                        <span aria-hidden="true">🧙</span>
+                        <span>Sage - Your AI Mentor</span>
+                    </div>
+                    <button class="mentor-modal-close" onclick="closeMentorModal()" aria-label="Close mentor">&times;</button>
+                </div>
+                <div class="mentor-modal-body">
+                    <div class="mentor-modal-messages" id="mentorModalMessages"></div>
+                </div>
+                <div class="mentor-modal-footer">
+                    <div class="mentor-modal-input-group">
+                        <input type="text" class="mentor-modal-input" id="mentorModalInput" placeholder="Ask Sage anything..." onkeypress="handleMentorModalKeypress(event)" aria-label="Ask Sage a question">
+                        <button class="mentor-modal-send" onclick="askMentorModal()" aria-label="Send question">Send</button>
+                    </div>
                 </div>
             </div>
         </div>

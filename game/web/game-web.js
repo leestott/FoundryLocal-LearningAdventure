@@ -249,23 +249,45 @@ function showMenu() {
         
         const card = document.createElement('div');
         card.className = `level-card ${isCompleted ? 'completed' : ''} ${!canPlay ? 'locked' : ''}`;
+        card.setAttribute('role', 'listitem');
+        
+        if (canPlay) {
+            card.setAttribute('tabindex', '0');
+            card.setAttribute('aria-label', `Level ${level.id}: ${level.title}. ${isCompleted ? 'Completed' : 'Available'}. ${level.objective}`);
+        } else {
+            card.setAttribute('aria-label', `Level ${level.id}: ${level.title}. Locked. Complete previous level to unlock.`);
+            card.setAttribute('aria-disabled', 'true');
+        }
+        
         card.innerHTML = `
-            <div class="level-number">${isCompleted ? '✓' : level.id}</div>
+            <div class="level-number" aria-hidden="true">${isCompleted ? '✓' : level.id}</div>
             <div class="level-info">
                 <h4>${level.title}</h4>
                 <p>${level.objective}</p>
             </div>
-            <div class="level-status">${isCompleted ? '🏆' : canPlay ? '▶️' : '🔒'}</div>
+            <div class="level-status" aria-hidden="true">${isCompleted ? '🏆' : canPlay ? '▶️' : '🔒'}</div>
         `;
         
         if (canPlay) {
             card.onclick = () => startLevel(level.id);
+            card.onkeypress = (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    startLevel(level.id);
+                }
+            };
         }
         
         levelList.appendChild(card);
     });
     
     updateStats();
+    
+    // Focus first available level
+    setTimeout(() => {
+        const firstAvailable = levelList.querySelector('.level-card:not(.locked)');
+        if (firstAvailable) firstAvailable.focus();
+    }, 100);
 }
 
 function returnToMenu() {
@@ -285,6 +307,29 @@ function startLevel(levelId) {
     gameState.taskProgress = {};
     
     showScreen('levelScreen');
+    
+    // Add breadcrumb navigation
+    const levelHeader = document.querySelector('.level-header');
+    const existingBreadcrumb = document.querySelector('.breadcrumb');
+    if (existingBreadcrumb) existingBreadcrumb.remove();
+    
+    const breadcrumb = document.createElement('div');
+    breadcrumb.className = 'breadcrumb';
+    breadcrumb.innerHTML = `
+        <button type="button" class="breadcrumb-item breadcrumb-link" id="breadcrumbHomeButton">Home</button>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item active">Level ${level.id}: ${level.title}</span>
+    `;
+    levelHeader.parentElement.insertBefore(breadcrumb, levelHeader);
+    
+    const breadcrumbHomeButton = breadcrumb.querySelector('#breadcrumbHomeButton');
+    if (breadcrumbHomeButton) {
+        breadcrumbHomeButton.addEventListener('click', () => {
+            if (typeof returnToMenu === 'function') {
+                returnToMenu();
+            }
+        });
+    }
     
     // Populate level info
     document.getElementById('levelTitle').textContent = `Level ${level.id}: ${level.title}`;
@@ -309,8 +354,14 @@ function startLevel(levelId) {
     // Build task-specific UI
     buildTaskUI(level);
     
+    // Add level navigation footer
+    addLevelNavigation(level);
+    
     // Mentor greeting
     addMentorMessage(`Welcome to Level ${level.id}! ${level.description.split('.')[0]}. Let me know if you need any help!`, 'sage');
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function buildTaskUI(level) {
@@ -345,37 +396,46 @@ function buildSimplePromptUI(container, level) {
     container.innerHTML = `
         <h4>💬 Chat with the AI Model</h4>
         <p class="task-instruction">Type your message below and send it to the AI model.</p>
-        <textarea class="task-input" id="promptInput" placeholder="Type your message here... Try 'Hello!' or 'What is Foundry Local?'"></textarea>
+        <textarea class="task-input" id="promptInput" placeholder="Type your message here... Try 'Hello!' or 'What is Foundry Local?'" aria-label="Enter your prompt"></textarea>
         <div class="task-buttons">
-            <button class="btn btn-primary" onclick="sendSimplePrompt()">
-                <span class="btn-icon">📤</span> Send to Model
+            <button class="btn btn-primary" onclick="sendSimplePrompt(event)" aria-label="Send prompt to AI model">
+                <span class="btn-icon" aria-hidden="true">📤</span> Send to Model
             </button>
         </div>
-        <div class="task-output" id="promptOutput" style="display:none;">
+        <div class="task-output" id="promptOutput" style="display:none;" role="region" aria-live="polite">
             <h5>🤖 AI Response:</h5>
             <pre id="promptResponse"></pre>
         </div>
-        <div class="progress-indicator" style="margin-top: 1rem;">
+        <div class="progress-indicator" style="margin-top: 1rem;" role="status" aria-live="polite">
             <span>Prompts sent: <strong id="promptCount">0</strong> / ${level.completionCriteria.minPrompts}</span>
         </div>
     `;
 }
 
-async function sendSimplePrompt() {
+async function sendSimplePrompt(event) {
     const input = document.getElementById('promptInput');
     const output = document.getElementById('promptOutput');
     const response = document.getElementById('promptResponse');
     const countDisplay = document.getElementById('promptCount');
+    const sendBtn = event?.target || document.querySelector('.task-buttons .btn-primary');
     
     const prompt = input.value.trim();
     if (!prompt) {
         addMentorMessage("Please type a message first! Try asking a question or giving a greeting.", 'sage');
+        input.focus();
         return;
+    }
+    
+    // Disable button during processing
+    if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<span class="loading"></span> Sending...';
     }
     
     // Show loading
     output.style.display = 'block';
     response.innerHTML = '<span class="loading"></span> Thinking...';
+    response.setAttribute('aria-busy', 'true');
     
     let aiResponse;
     
@@ -392,12 +452,20 @@ async function sendSimplePrompt() {
     }
     
     response.textContent = aiResponse;
+    response.removeAttribute('aria-busy');
     gameState.taskProgress.promptCount++;
     countDisplay.textContent = gameState.taskProgress.promptCount;
+    
+    // Re-enable button
+    if (sendBtn) {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = '<span class="btn-icon" aria-hidden="true">📤</span> Send to Model';
+    }
     
     // Clear input for next prompt
     input.value = '';
     input.placeholder = 'Try another prompt...';
+    input.focus();
     
     // Check completion
     const level = gameState.currentLevelData;
@@ -423,21 +491,21 @@ function buildPromptImprovementUI(container, level) {
             <div class="bad-prompt-box" style="background: var(--bg-card); padding: 1rem; border-radius: 8px; border-left: 4px solid var(--danger);">
                 <h5 style="color: var(--danger);">❌ Bad Prompt</h5>
                 <p style="font-family: monospace; margin-top: 0.5rem;">"${level.badPrompt}"</p>
-                <button class="btn btn-secondary" style="margin-top: 0.5rem;" onclick="testBadPrompt()">Test This</button>
+                <button class="btn btn-secondary" style="margin-top: 0.5rem;" onclick="testBadPrompt()" aria-label="Test the bad prompt example">Test This</button>
             </div>
             <div class="good-prompt-box" style="background: var(--bg-card); padding: 1rem; border-radius: 8px; border-left: 4px solid var(--secondary);">
                 <h5 style="color: var(--secondary);">✅ Your Improved Version</h5>
-                <textarea class="task-input" id="improvedPrompt" placeholder="Rewrite the bad prompt to be specific, clear, and detailed..." style="min-height: 80px; margin-top: 0.5rem;"></textarea>
-                <button class="btn btn-success" style="margin-top: 0.5rem;" onclick="testImprovedPrompt()">Test Improved</button>
+                <textarea class="task-input" id="improvedPrompt" placeholder="Rewrite the bad prompt to be specific, clear, and detailed..." style="min-height: 80px; margin-top: 0.5rem;" aria-label="Enter your improved prompt"></textarea>
+                <button class="btn btn-success" style="margin-top: 0.5rem;" onclick="testImprovedPrompt()" aria-label="Test your improved prompt">Test Improved</button>
             </div>
         </div>
         
         <div class="results-comparison" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div class="task-output" id="badPromptOutput" style="display:none;">
+            <div class="task-output" id="badPromptOutput" style="display:none;" role="region" aria-live="polite">
                 <h5>❌ Bad Prompt Response:</h5>
                 <pre id="badResponse"></pre>
             </div>
-            <div class="task-output" id="goodPromptOutput" style="display:none; border-left-color: var(--secondary);">
+            <div class="task-output" id="goodPromptOutput" style="display:none; border-left-color: var(--secondary);" role="region" aria-live="polite">
                 <h5>✅ Improved Response:</h5>
                 <pre id="goodResponse"></pre>
             </div>
@@ -879,6 +947,32 @@ function generateDemoToolResponse(tool, input) {
 // LEVEL COMPLETION
 // ═══════════════════════════════════════════════════════════════════
 
+function addLevelNavigation(level) {
+    const existingNav = document.querySelector('.level-navigation');
+    if (existingNav) existingNav.remove();
+    
+    const levelBody = document.querySelector('.level-body');
+    const nav = document.createElement('div');
+    nav.className = 'level-navigation';
+    
+    const prevLevel = level.id > 1 ? GAME_DATA.levels[level.id - 2] : null;
+    const nextLevel = level.id < 5 ? GAME_DATA.levels[level.id] : null;
+    const nextUnlocked = !nextLevel || gameState.levels[level.id]?.completed;
+    
+    nav.innerHTML = `
+        <div class="level-nav-info">
+            <span>Level ${level.id} of 5</span>
+        </div>
+        <div class="level-nav-actions">
+            ${prevLevel ? `<button class="btn btn-secondary" onclick="startLevel(${prevLevel.id})" aria-label="Go to previous level">← Previous</button>` : ''}
+            <button class="btn btn-secondary" onclick="returnToMenu()" aria-label="Return to menu">Menu</button>
+            ${nextLevel ? `<button class="btn btn-primary" onclick="startLevel(${nextLevel.id})" ${!nextUnlocked ? 'disabled' : ''} aria-label="Go to next level">Next →</button>` : ''}
+        </div>
+    `;
+    
+    levelBody.appendChild(nav);
+}
+
 function completeLevel() {
     const level = gameState.currentLevelData;
     
@@ -901,56 +995,89 @@ function completeLevel() {
     saveProgress();
     updateStats();
     
-    // Show inline celebration below the task output (not a modal)
-    showInlineCelebration(level, badge);
+    // Show centered completion modal
+    showCompletionModal(level, badge);
+    
+    // Update navigation
+    addLevelNavigation(level);
     
     // Check if all levels complete
     if (gameState.player.badges.length >= 5) {
-        addMentorMessage("🎉 CONGRATULATIONS! You've completed all levels and become a true Foundry Champion! You now have the skills to build amazing AI applications!", 'sage');
+        addMentorMessage("🎉 CONGRATULATIONS! You've completed all levels and become a true Foundry Champion!", 'sage');
     }
 }
 
-function showInlineCelebration(level, badge) {
-    // Remove any existing celebration
-    const existing = document.querySelector('.inline-celebration');
-    if (existing) existing.remove();
+function showCompletionModal(level, badge) {
+    const modal = document.createElement('div');
+    modal.className = 'completion-modal active';
+    modal.id = 'completionModalNew';
     
-    // Create inline celebration element
-    const celebration = document.createElement('div');
-    celebration.className = 'inline-celebration';
-    celebration.innerHTML = `
-        <div class="celebration-icon">${level.rewardIcon}</div>
-        <h3>Level Complete!</h3>
-        <p class="badge-name">You earned: ${level.reward}</p>
-        <p class="points-earned">+${level.points} points</p>
-        <div class="celebration-actions">
-            <button class="btn btn-replay" onclick="replayCurrentLevel()">
-                <span class="btn-icon">🔄</span> Review Output
-            </button>
-            <button class="btn btn-continue" onclick="returnToMenu()">
-                <span class="btn-icon">▶️</span> Continue to Menu
-            </button>
+    const nextLevel = level.id < 5 ? GAME_DATA.levels[level.id] : null;
+    const allComplete = gameState.player.badges.length >= 5;
+    const safeBadge = badge || { icon: '🏆', name: 'Achievement Unlocked' };
+    
+    modal.innerHTML = `
+        <div class="completion-content" role="dialog" aria-labelledby="completionTitle" aria-modal="true">
+            <div class="completion-icon">${level.rewardIcon}</div>
+            <h2 class="completion-title" id="completionTitle">Level Complete!</h2>
+            <p class="completion-message">Congratulations! You've successfully completed ${level.title}.</p>
+            
+            <div class="completion-badge">
+                <span>${safeBadge.icon}</span>
+                <span>${safeBadge.name}</span>
+            </div>
+            
+            <div class="completion-points">+${level.points} Points</div>
+            
+            <div class="completion-divider"></div>
+            
+            <div class="completion-stats">
+                <div class="completion-stat">
+                    <span class="completion-stat-value">${gameState.player.totalPoints}</span>
+                    <span class="completion-stat-label">Total Points</span>
+                </div>
+                <div class="completion-stat">
+                    <span class="completion-stat-value">${gameState.player.badges.length}/5</span>
+                    <span class="completion-stat-label">Badges</span>
+                </div>
+                <div class="completion-stat">
+                    <span class="completion-stat-value">${Math.round((gameState.player.badges.length / 5) * 100)}%</span>
+                    <span class="completion-stat-label">Complete</span>
+                </div>
+            </div>
+            
+            <div class="completion-actions">
+                ${nextLevel && !allComplete ? `
+                    <button class="btn btn-primary" onclick="closeCompletionModal(); startLevel(${nextLevel.id});" aria-label="Continue to next level">
+                        Next Level →
+                    </button>
+                ` : ''}
+                ${allComplete ? `
+                    <button class="btn btn-primary" onclick="closeCompletionModal(); returnToMenu();" aria-label="Return to menu">
+                        View All Badges
+                    </button>
+                ` : ''}
+                <button class="btn btn-secondary" onclick="closeCompletionModal(); returnToMenu();" aria-label="Return to menu">
+                    Back to Menu
+                </button>
+            </div>
         </div>
     `;
     
-    // Append to task area so output remains visible above
-    const taskArea = document.getElementById('taskArea');
-    taskArea.appendChild(celebration);
+    document.body.appendChild(modal);
     
-    // Scroll celebration into view smoothly
-    celebration.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    // Focus trap
+    setTimeout(() => {
+        const firstButton = modal.querySelector('.btn');
+        if (firstButton) firstButton.focus();
+    }, 100);
 }
 
-function replayCurrentLevel() {
-    // Remove celebration and let user review their work
-    const celebration = document.querySelector('.inline-celebration');
-    if (celebration) {
-        celebration.innerHTML = `
-            <p style="color: var(--text-secondary); margin-bottom: var(--gap);">Take your time reviewing your work above.</p>
-            <button class="btn btn-continue" onclick="returnToMenu()">
-                <span class="btn-icon">▶️</span> Continue to Menu
-            </button>
-        `;
+function closeCompletionModal() {
+    const modal = document.getElementById('completionModalNew');
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.remove(), 300);
     }
 }
 
@@ -1032,7 +1159,24 @@ function showHelp() {
 }
 
 function closeModal(modalId) {
-    document.getElementById(modalId).classList.remove('active');
+    const modal = document.getElementById(modalId);
+    modal.classList.remove('active');
+    
+    // Return focus to trigger element
+    const triggerMap = {
+        'progressModal': 'showProgress',
+        'badgesModal': 'showBadges',
+        'helpModal': 'showHelp'
+    };
+    
+    // Focus management for accessibility
+    setTimeout(() => {
+        const lastFocused = document.activeElement;
+        if (lastFocused && lastFocused.tagName === 'BODY') {
+            const firstFocusable = document.querySelector('.btn:not([disabled])');
+            if (firstFocusable) firstFocusable.focus();
+        }
+    }, 100);
 }
 
 // Close modals on background click
@@ -1042,47 +1186,140 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// Trap focus in modal
+document.addEventListener('keydown', (e) => {
+    const activeModal = document.querySelector('.modal.active');
+    if (!activeModal) return;
+    
+    if (e.key === 'Escape') {
+        const modalId = activeModal.id;
+        closeModal(modalId);
+    }
+    
+    if (e.key === 'Tab') {
+        const focusableElements = activeModal.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstFocusable = focusableElements[0];
+        const lastFocusable = focusableElements[focusableElements.length - 1];
+        
+        if (e.shiftKey) {
+            if (document.activeElement === firstFocusable) {
+                lastFocusable.focus();
+                e.preventDefault();
+            }
+        } else {
+            if (document.activeElement === lastFocusable) {
+                firstFocusable.focus();
+                e.preventDefault();
+            }
+        }
+    }
+});
+
 // ═══════════════════════════════════════════════════════════════════
 // MENTOR
 // ═══════════════════════════════════════════════════════════════════
 
 function initMentor() {
     const greeting = GAME_DATA.mentor.greetings[Math.floor(Math.random() * GAME_DATA.mentor.greetings.length)];
-    addMentorMessage(greeting, 'sage');
+    addMentorModalMessage(greeting, 'sage');
 }
 
-function toggleMentor() {
-    document.getElementById('mentorContainer').classList.toggle('collapsed');
+function openMentorModal() {
+    const modal = document.getElementById('mentorModal');
+    modal.classList.add('active');
+    hideMessagePopup();
+    clearNotificationBadge();
+    setTimeout(() => {
+        const input = document.getElementById('mentorModalInput');
+        if (input) input.focus();
+    }, 100);
 }
 
-function addMentorMessage(text, type) {
-    const messages = document.getElementById('mentorMessages');
+function closeMentorModal() {
+    const modal = document.getElementById('mentorModal');
+    modal.classList.remove('active');
+}
+
+function addMentorModalMessage(text, type) {
+    const messages = document.getElementById('mentorModalMessages');
     const msg = document.createElement('div');
-    msg.className = `mentor-message ${type}`;
+    msg.className = `mentor-modal-message ${type}`;
     msg.textContent = text;
     messages.appendChild(msg);
     messages.scrollTop = messages.scrollHeight;
-}
-
-function handleMentorKeypress(event) {
-    if (event.key === 'Enter') {
-        askMentor();
+    
+    if (type === 'sage') {
+        const modal = document.getElementById('mentorModal');
+        if (!modal.classList.contains('active')) {
+            showMessagePopup(text);
+            showNotificationBadge();
+        }
     }
 }
 
-async function askMentor() {
-    const input = document.getElementById('mentorQuestion');
+function showMessagePopup(message) {
+    const popup = document.getElementById('mentorMessagePopup');
+    const messageText = document.getElementById('popupMessageText');
+    
+    messageText.textContent = message.length > 80 ? message.substring(0, 80) + '...' : message;
+    popup.style.display = 'block';
+    
+    popup.onclick = () => {
+        openMentorModal();
+    };
+    
+    setTimeout(() => {
+        hideMessagePopup();
+    }, 8000);
+}
+
+function hideMessagePopup() {
+    const popup = document.getElementById('mentorMessagePopup');
+    popup.style.display = 'none';
+}
+
+function showNotificationBadge() {
+    const badge = document.getElementById('mentorNotificationBadge');
+    if (badge) {
+        const currentCount = parseInt(badge.textContent) || 0;
+        badge.textContent = currentCount + 1;
+        badge.style.display = 'flex';
+    }
+}
+
+function clearNotificationBadge() {
+    const badge = document.getElementById('mentorNotificationBadge');
+    if (badge) {
+        badge.textContent = '1';
+        badge.style.display = 'none';
+    }
+}
+
+function addMentorMessage(text, type) {
+    addMentorModalMessage(text, type);
+}
+
+function handleMentorModalKeypress(event) {
+    if (event.key === 'Enter') {
+        askMentorModal();
+    }
+}
+
+async function askMentorModal() {
+    const input = document.getElementById('mentorModalInput');
     const question = input.value.trim();
     
     if (!question) return;
     
-    addMentorMessage(input.value, 'user');
+    addMentorModalMessage(input.value, 'user');
     input.value = '';
     
     // Try Foundry Local for intelligent response
     if (foundryConnection.connected) {
         try {
-            addMentorMessage("Let me think about that...", 'sage');
+            addMentorModalMessage("Let me think about that...", 'sage');
             
             const systemPrompt = `You are a helpful AI mentor named Sage, guiding a learner through the Foundry Local Learning Adventure game. 
 The game teaches AI/ML concepts through 5 levels:
@@ -1111,16 +1348,14 @@ Be encouraging, concise, and helpful. If asked about game topics, explain AI con
             if (response.ok) {
                 const data = await response.json();
                 const aiResponse = data.choices[0].message.content;
-                // Remove the "thinking" message and add real response
-                const messages = document.getElementById('mentorMessages');
+                const messages = document.getElementById('mentorModalMessages');
                 messages.removeChild(messages.lastChild);
-                addMentorMessage(aiResponse, 'sage');
+                addMentorModalMessage(aiResponse, 'sage');
                 return;
             }
         } catch (error) {
             console.log('Mentor Foundry error, using fallback:', error.message);
-            // Remove "thinking" message if it was added
-            const messages = document.getElementById('mentorMessages');
+            const messages = document.getElementById('mentorModalMessages');
             if (messages.lastChild?.textContent === "Let me think about that...") {
                 messages.removeChild(messages.lastChild);
             }
@@ -1138,7 +1373,6 @@ Be encouraging, concise, and helpful. If asked about game topics, explain AI con
         }
     }
     
-    // Check for level-specific help
     const levelMatch = questionLower.match(/level\s*(\d)/);
     if (levelMatch) {
         const levelNum = parseInt(levelMatch[1]);
@@ -1147,8 +1381,16 @@ Be encouraging, concise, and helpful. If asked about game topics, explain AI con
         }
     }
     
-    setTimeout(() => addMentorMessage(response, 'sage'), 500);
+    setTimeout(() => addMentorModalMessage(response, 'sage'), 500);
 }
+
+// Close modal on background click
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('mentorModal');
+    if (e.target === modal) {
+        closeMentorModal();
+    }
+});
 
 // ═══════════════════════════════════════════════════════════════════
 // KEYBOARD SHORTCUTS
@@ -1157,6 +1399,6 @@ Be encouraging, concise, and helpful. If asked about game topics, explain AI con
 document.addEventListener('keydown', (e) => {
     // ESC to close modals
     if (e.key === 'Escape') {
-        document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
+        document.querySelectorAll('.modal.active, .completion-modal.active, .mentor-modal.active').forEach(m => m.classList.remove('active'));
     }
 });
