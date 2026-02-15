@@ -119,6 +119,44 @@ async function checkFoundryConnection() {
 }
 
 /**
+ * Retry connecting to Foundry Local with polling.
+ * Useful when the service is still starting up.
+ */
+async function waitForFoundry(maxWaitMs = 15000, intervalMs = 3000) {
+    const start = Date.now();
+    while (Date.now() - start < maxWaitMs) {
+        if (await checkFoundryConnection()) return true;
+        console.log(`[Foundry] Not ready yet — retrying (${Math.ceil((maxWaitMs - (Date.now() - start)) / 1000)}s remaining)...`);
+        await new Promise(r => setTimeout(r, intervalMs));
+    }
+    return foundryConnection.connected;
+}
+
+/**
+ * Periodic health check — re-discovers Foundry Local if the connection drops
+ * (e.g. the user restarted the service and the port changed).
+ */
+let _healthCheckInterval = null;
+function startHealthCheck(intervalMs = 30000) {
+    if (_healthCheckInterval) return; // already running
+    _healthCheckInterval = setInterval(async () => {
+        if (!foundryConnection.connected) return; // nothing to check in demo mode
+        try {
+            const resp = await fetch(`${foundryConnection.baseUrl}/v1/models`, {
+                signal: AbortSignal.timeout(2000)
+            });
+            if (resp.ok) return; // still healthy
+        } catch { /* connection lost */ }
+        console.log('[Foundry] Connection lost — re-discovering...');
+        foundryConnection.connected = false;
+        const recovered = await checkFoundryConnection();
+        if (!recovered) {
+            console.log('[Foundry] Could not reconnect — running in demo mode');
+        }
+    }, intervalMs);
+}
+
+/**
  * Try to read the Foundry Local port discovered by the start script.
  * The start-web scripts run 'foundry service status' and write the port
  * to foundry-port.json so the browser can find it.
@@ -191,7 +229,14 @@ async function callFoundryAPI(prompt, systemPrompt = null) {
 // ═══════════════════════════════════════════════════════════════════
 
 document.addEventListener('DOMContentLoaded', async () => {
-    await checkFoundryConnection();
+    // Try immediate connection first; if Foundry is still starting, retry with polling
+    const connected = await checkFoundryConnection();
+    if (!connected) {
+        console.log('[Foundry] Initial check failed — waiting for Foundry to start...');
+        await waitForFoundry();
+    }
+    // Start periodic health check so we reconnect if the port changes mid-session
+    startHealthCheck();
     loadProgress();
     initMentor();
 });

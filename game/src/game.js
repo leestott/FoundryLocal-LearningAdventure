@@ -30,22 +30,32 @@ class FoundryLocalClient {
     }
 
     /**
-     * Initialize the client and verify connection
+     * Initialize the client and verify connection.
+     * Retries discovery for up to maxWaitMs if Foundry is still starting.
      */
-    async initialize() {
+    async initialize(maxWaitMs = 15000, intervalMs = 3000) {
         console.log('\n' + '='.repeat(60));
         console.log('  FOUNDRY CONNECTION STATUS');
         console.log('='.repeat(60));
         
-        // Try Foundry Local first
+        // Try Foundry Local first, with retry polling for cold starts
         console.log('\n[*] Checking Foundry Local...');
-        const localConnected = await this.tryFoundryLocal();
-        
-        if (localConnected) {
-            this.connectionMode = 'local';
-            this.initialized = true;
-            this.displayConnectionStatus();
-            return true;
+        const start = Date.now();
+        let attempt = 1;
+        while (true) {
+            const localConnected = await this.tryFoundryLocal();
+            if (localConnected) {
+                this.connectionMode = 'local';
+                this.initialized = true;
+                this.displayConnectionStatus();
+                return true;
+            }
+            const elapsed = Date.now() - start;
+            if (elapsed >= maxWaitMs) break;
+            const remaining = Math.ceil((maxWaitMs - elapsed) / 1000);
+            console.log(`    Foundry not ready yet — retrying (${remaining}s remaining)...`);
+            attempt++;
+            await new Promise(r => setTimeout(r, intervalMs));
         }
 
         // Try Azure Foundry if configured
@@ -66,6 +76,27 @@ class FoundryLocalClient {
         this.initialized = false;
         this.displayConnectionStatus();
         return false;
+    }
+
+    /**
+     * Re-discover Foundry Local if the connection is lost (e.g. port changed after restart).
+     * Call this before critical API operations or on a periodic timer.
+     */
+    async reconnectIfNeeded() {
+        if (this.connectionMode !== 'local') return;
+        try {
+            const resp = await fetch(`${this.baseUrl}/v1/models`, {
+                signal: AbortSignal.timeout(2000)
+            });
+            if (resp.ok) return; // still healthy
+        } catch { /* connection lost */ }
+        console.log('\n[!] Foundry Local connection lost — re-discovering...');
+        const found = await this.tryFoundryLocal();
+        if (!found) {
+            console.log('[!] Could not reconnect to Foundry Local — falling back to demo mode');
+            this.connectionMode = 'demo';
+            this.initialized = false;
+        }
     }
 
     /**
@@ -225,6 +256,12 @@ class FoundryLocalClient {
      * Send a chat message to the model
      */
     async chat(message) {
+        if (!this.initialized) {
+            return this.getDemoResponse(message);
+        }
+
+        // Re-discover Foundry if the connection dropped (port may have changed)
+        await this.reconnectIfNeeded();
         if (!this.initialized) {
             return this.getDemoResponse(message);
         }
