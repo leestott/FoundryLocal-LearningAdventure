@@ -229,7 +229,22 @@ async function callFoundryAPI(prompt, systemPrompt = null) {
 // ═══════════════════════════════════════════════════════════════════
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Try immediate connection first; if Foundry is still starting, retry with polling
+    // Initialize game UI immediately so the page is interactive right away
+    loadProgress();
+    initMentor();
+
+    // On remote hosts (e.g. GitHub Pages) Foundry Local is never available,
+    // so skip the retry polling and health checks to avoid blocking the page.
+    const isRemote = location.protocol === 'https:' && !location.hostname.match(/^(localhost|127\.)/);
+
+    if (isRemote) {
+        console.log('[Foundry] Running on a remote host — skipping local connection check');
+        foundryConnection.connected = false;
+        updateConnectionStatus();
+        return;
+    }
+
+    // Try immediate connection; if Foundry is still starting, retry with polling
     const connected = await checkFoundryConnection();
     if (!connected) {
         console.log('[Foundry] Initial check failed — waiting for Foundry to start...');
@@ -237,8 +252,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     // Start periodic health check so we reconnect if the port changes mid-session
     startHealthCheck();
-    loadProgress();
-    initMentor();
 });
 
 function loadProgress() {
