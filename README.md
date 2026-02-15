@@ -88,33 +88,16 @@ You don't need any prior AI experience! Just follow along, complete challenges, 
 
 ## 🎮 Play Online (GitHub Pages)
 
-### 🌐 Install Foundry Local on your machine for the enhanced AI 
+The web version runs entirely in your browser with **no installation required**:
 
-The easiest way to play is directly in your browser. The web version:
+- All 5 levels with interactive challenges
+- Progress saved automatically (localStorage)
+- Works on desktop, tablet, and mobile
+- Starts in Demo Mode — connects to **real Foundry Local** automatically if installed
 
-- **Works immediately** - just click and play
-- **No downloads** - runs entirely in browser
-- **Interactive learning** - all 5 levels included
-- **Progress saved** - uses browser localStorage
-- **Mobile friendly** - works on phones/tablets
+> **Tip for educators**: Fork the repo, enable [GitHub Pages](#-deploy-to-github-pages), and share the link with your class. Students can start learning immediately with zero setup.
 
-#### How to Access
-
-1. **Public version**: Visit the deployed GitHub Pages URL
-2. **Your own copy**: Fork the repo and enable GitHub Pages
-
-#### Web vs Terminal Version
-
-| Feature | Web | Terminal |
-|---------|-----|----------|
-| No installation | ✅ | ❌ |
-| Mobile support | ✅ | ❌ |
-| Share with friends | ✅ | ❌ |
-| Real AI responses | ✅ (requires Foundry Local) | ✅ (requires Foundry Local) |
-| Auto port discovery | ✅ | ✅ |
-| Full CLI experience | ❌ | ✅ |
-
-**Recommendation**: Start with the **web version** to learn the concepts, then try the **terminal version** with Foundry Local for real AI interactions!
+When you're ready for real AI interactions, try the [CLI version](#option-2-cli-terminal---full-experience) with Foundry Local.
 
 ---
 
@@ -122,13 +105,13 @@ The easiest way to play is directly in your browser. The web version:
 
 Choose how you want to play:
 
-| Option | Best For | AI Responses |
+| Option | Best For | How to Start |
 |--------|----------|-------------|
-| **🌐 Web App GitHub Pages No Foundry Local** | Quick start, no install | Simulated |
-| **🌐 Web App GitHub Pages Foundry Local Installed** | Quick start, no install | Real AI |
- **🌐 Web App local Machine No Foundry Local Installed ** | Quick start, no install | Simulated |
-| **🌐 Web App local Machine Foundry Local Installed ** | Quick start, no install | Real AI |
-| **💻 CLI (Terminal)** | Full experience with Foundry Local | Real AI |
+| **🌐 [Play Online](https://leestott.github.io/FoundryLocal-LearningAdventure/)** | Classrooms, quick demos, mobile | Click the link — no install needed |
+| **🌐 Run Web Locally** | Offline use, local development | `cd game` then run `scripts/start-web.ps1` |
+| **💻 CLI (Terminal)** | Power users, traceable prompts | `cd game && npm start` |
+
+> All three options start in **Demo Mode** (simulated AI). Install [Foundry Local](#step-4-for-the-interactive-ai-install-foundry-local) for real AI responses — the game auto-discovers it on any port.
 
 ---
 
@@ -550,7 +533,7 @@ See the game in action with our walkthrough videos:
 
 ---
 
-## �💻 Commands Reference
+## 💻 Commands Reference
 
 | Command | What It Does | Example |
 |---------|--------------|---------|
@@ -630,39 +613,7 @@ Deploy your own copy of the game to GitHub Pages for free hosting!
 
 4. **Visit** `https://YOUR-USERNAME.github.io/FoundryLocal-LearningAdventure/`
 
-### Local Testing of Web Version
-
-Test the web version locally before deploying:
-
-```bash
-# Navigate to web folder
-cd game/web
-
-# Install a simple HTTP server (if needed)
-npm install -g http-server
-
-# Start the server
-http-server -p 8080 -c-1
-
-# Open in browser
-start http://localhost:8080  # Windows
-open http://localhost:8080   # macOS
-xdg-open http://localhost:8080  # Linux
-```
-
-### Web Version Features
-
-The GitHub Pages version includes:
-- ✅ All 5 levels with full interactivity
-- ✅ AI mentor Sage with helpful responses
-- ✅ Progress saved in browser localStorage
-- ✅ Badge and achievement system
-- ✅ Hint system for each level
-- ✅ Mobile responsive design
-- ✅ Works completely offline after first load
-- ⚠️ Uses simulated AI responses (no real Foundry Local)
-
-For the **full AI experience** with real model responses, use the Node.js terminal version with Foundry Local installed.
+> **Local testing**: See the [Quick Start](#-quick-start-5-minutes) section for running the web version on your machine.
 
 ---
 
@@ -888,8 +839,6 @@ The game automatically detects available AI services:
 | 1 | **Foundry Local** | Uses local AI model (auto-discovers dynamic port via CLI) |
 | 2 | **Azure OpenAI** | Uses Azure cloud if configured |
 | 3 | **Demo Mode** | Simulated responses (fallback) |
-
-> **Dynamic Port Discovery**: Foundry Local assigns a different port each time it starts. The game automatically discovers the correct port by running `foundry service status`, then falls back to scanning common ports. No manual port configuration is needed.
 
 ### Using Azure OpenAI (Cloud)
 

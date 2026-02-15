@@ -2,13 +2,14 @@
 
 *Published January 28, 2026*
 
-Building delightful AI learning experiences does not have to be a mystery. The Foundry Local Learning Adventure shows how a handful of thoughtful design decisions can turn abstract concepts like prompt engineering and embeddings into a playful journey that runs entirely on your machine. This post highlights the ingredients you can reuse to craft your own inspiring AI education experiences.
+What if learning AI felt like playing a game? The **Foundry Local Learning Adventure** is an open-source project that turns abstract concepts — prompt engineering, embeddings, workflows, and tool building — into a playful 5-level quest that runs entirely on your machine. Whether you're a **student** exploring AI for the first time, an **educator** looking for a ready-made classroom activity, or a **developer** building your own AI learning tools, this post unpacks the design choices you can learn from and reuse.
 
 ## A Game That Teaches While You Play
 
 - **Mentored progression:** Five narrative levels, guided by Sage the in-game mentor, cover first prompts through tool-building. Each level layers a single new AI concept so players never feel lost.
 - **Every environment:** The same content powers a terminal-first experience for model tinkerers and a browser-friendly version for instant demos—perfect for hackathons or classrooms.
 - **Offline-first mindset:** By default the game connects to Microsoft Foundry Local; if that is unavailable it gracefully falls back to Microsoft Foundry and Azure OpenAI or a fully simulated demo mode, keeping the learning loop unbroken.
+- **Classroom-ready:** Educators can fork the repo, enable GitHub Pages, and share a link — students start playing instantly with no local setup.
 - **Dynamic port discovery:** Foundry Local assigns a different port each time the service starts. Rather than asking learners to hunt for port numbers, the game automatically discovers the active endpoint using a 3-tier strategy: CLI-based discovery via `foundry service status`, the configured URL, and common port scanning.
 
 ## Scenes From Inside the Adventure
@@ -90,18 +91,26 @@ Feel free to copy this pattern into your own agents. The triage between local, c
 | **Automate setup** | New contributors, scripted labs | `scripts/start-game.ps1` (Windows) or `scripts/start-game.sh` (macOS/Linux)
 
 
-## Remix Ideas for Your Own Build
+## Remix Ideas
 
-1. **Swap the syllabus:** Edit `game/data/levels.json` to teach your domain—security copilot workflows, custom GPT operations, or agent evaluation basics.
-2. **Inject real tools:** Follow Level 5’s pattern to register functions (think vector searchers or DevOps runbooks) that characters can call.
-3. **Add observability:** Hook tracing into `FoundryLocalClient.chat()` so learners can open a dashboard and watch tokens flow in real time.
-4. **Borrow the port discovery:** The dynamic port discovery pattern works for any tool that wraps Foundry Local. Drop `discoverPortViaCLI()` into your own projects so users never have to configure a port manually.
-5. **Ship it everywhere:** Use the included GitHub Actions workflow to deploy your variant to Pages—then let learners fork-and-go.
+### For Educators
+1. **Swap the syllabus:** Edit `game/data/levels.json` to teach your curriculum — responsible AI, data literacy, or domain-specific copilot workflows. No code changes needed.
+2. **Run a classroom challenge:** Fork the repo, enable GitHub Pages, and share the link. Students race to earn all five badges while learning at their own pace.
+3. **Add assessment hooks:** Extend the progress system to export completion data, giving you visibility into which concepts students find easy or hard.
+
+### For Developers
+4. **Inject real tools:** Follow Level 5's pattern to register functions — vector searchers, DevOps runbooks, database queries — that AI characters can call.
+5. **Add observability:** Hook tracing into `FoundryLocalClient.chat()` so users can watch tokens flow in real time.
+6. **Borrow the port discovery:** Drop `discoverPortViaCLI()` into your own Foundry Local projects so users never have to configure a port manually.
+
+### For Students
+7. **Extend a level:** Pick any level and add a new challenge or hint — a great first open-source contribution.
+8. **Build your own tool:** After completing Level 5, create a tool that solves a real problem you care about and submit a PR.
 
 ## Call to Adventure
 
-The entire project is open source under MIT. Fork it, remix it, and share what you build:
+The entire project is open source under MIT. Whether you're a student earning your first badge, an educator sharing it with a class, or a developer remixing it into something new — jump in:
 
 👉 **[Explore the repo and start playing](https://github.com/leestott/FoundryLocal-LearningAdventure)**
 
-Tag your creations with #FoundryLocal so the community can celebrate every new learning quest you design.
+Tag your creations with **#FoundryLocal** so the community can celebrate every new learning quest you design.
