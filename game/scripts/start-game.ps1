@@ -89,7 +89,7 @@ function Test-FoundryLocalRunning {
     }
     
     # Fall back to scanning common ports
-    $ports = @(61341, 5272, 5000, 8080)
+    $ports = @(61341, 5272, 51319, 5000, 8080)
     
     foreach ($port in $ports) {
         try {

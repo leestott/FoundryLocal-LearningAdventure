@@ -497,49 +497,56 @@ function add_numbers(a, b) {
 
 ---
 
-## � Game Screenshots
+## 📸 Game Screenshots
 
 ### Welcome Screen
 When you first open the game, you'll see a friendly welcome screen:
 
-![Welcome Screen](game/screenshots/01-welcome-screen.svg)
+![Welcome Screen](game/screenshots/01-welcome-screen.png)
 
 ### Main Menu - Level Selection
 After entering your name, choose from 5 progressive levels:
 
-![Main Menu](game/screenshots/03-main-menu.svg)
+![Main Menu](game/screenshots/03-main-menu.png)
 
 ### Level 1 - Meet the Model
 Your first interaction with an AI model:
 
-![Level 1](game/screenshots/04-level1-meet-model.svg)
+![Level 1](game/screenshots/04-level1-meet-model.png)
 
 ### AI Response
 Watch the AI respond to your prompts in real-time:
 
-![AI Response](game/screenshots/05-level1-response.svg)
+![AI Response](game/screenshots/05-level1-response.png)
 
 ### Sage - Your AI Mentor
 Get help anytime from Sage, your friendly mentor:
 
-![Mentor Chat](game/screenshots/06-mentor-chat.svg)
+![Mentor Chat](game/screenshots/06-mentor-chat.png)
 
 ### Hint System
 Stuck? Use hints to guide your learning:
 
-![Hint System](game/screenshots/07-hint-system.svg)
+![Hint System](game/screenshots/07-hint-system.png)
 
 ### Progress Tracking
 Track your points, badges, and completion status:
 
-![Progress Modal](game/screenshots/08-progress-modal.svg)
+![Progress Modal](game/screenshots/08-progress-modal.png)
 
 ### Badge Collection
 Earn badges as you master each concept:
 
-![Badges](game/screenshots/09-badges-collection.svg)
+![Badges](game/screenshots/09-badges-collection.png)
 
-> **Note**: Screenshots are from the web version. The terminal version has similar functionality with a text-based interface.
+> **Note**: Screenshots are captured automatically using Playwright. The terminal version has similar functionality with a text-based interface.
+
+### 🎬 Demo Videos
+
+See the game in action with our walkthrough videos:
+
+- **[Desktop Walkthrough](game/screenshots/demo-video/game-walkthrough.mp4)** — Full game experience (1280×720)
+- **[Mobile Walkthrough](game/screenshots/demo-video/mobile-walkthrough.mp4)** — Mobile-responsive view (375×812)
 
 ---
 

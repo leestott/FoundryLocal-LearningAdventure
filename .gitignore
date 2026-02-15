@@ -106,6 +106,8 @@ game/tests/test-results/
 game/tests/playwright-report/
 **/playwright-report/
 **/test-results/
+playwright/.cache/
+.playwright/
 
 # ─────────────────────────────────────────────────────────────────────
 # Game-Specific
@@ -116,3 +118,6 @@ game/tests/playwright-report/
 # Foundry Local cache (if any)
 .foundry/
 foundry-cache/
+
+# Foundry port discovery file (auto-generated)
+game/web/foundry-port.json

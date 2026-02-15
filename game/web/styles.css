@@ -24,6 +24,13 @@
     --text-secondary: #a1a1aa;
     --text-muted: #71717a;
     
+    /* Elevated backgrounds */
+    --bg-card-hover: #22222e;
+    --bg-dark: #0d0d14;
+    
+    /* Extended palette */
+    --secondary-dark: #059669;
+    
     /* Effects */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
     --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
@@ -758,10 +765,10 @@ body::before {
 
 .modal.active {
     display: flex;
-    animation: fadeIn 0.3s ease;
+    animation: modalFadeIn 0.3s ease;
 }
 
-@keyframes fadeIn {
+@keyframes modalFadeIn {
     from { 
         opacity: 0;
     }

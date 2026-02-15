@@ -13,13 +13,20 @@ Building delightful AI learning experiences does not have to be a mystery. The F
 
 ## Scenes From Inside the Adventure
 
-![Welcome screen](../game/screenshots/01-welcome-screen.svg)
+![Welcome screen](../game/screenshots/01-welcome-screen.png)
 
-![Level progression menu](../game/screenshots/03-main-menu.svg)
+![Level progression menu](../game/screenshots/03-main-menu.png)
 
-![Mentor guidance](../game/screenshots/06-mentor-chat.svg)
+![Mentor guidance](../game/screenshots/06-mentor-chat.png)
 
-These SVG screenshots (captured directly from the web client) make it easy to reuse the visual language in presentations or developer docs.
+These PNG screenshots are captured automatically using Playwright tests, making it easy to keep documentation in sync with the latest UI changes.
+
+### Demo Videos
+
+Want to see the game in action? Check out the walkthrough videos:
+
+- **[Desktop Walkthrough](../game/screenshots/demo-video/game-walkthrough.mp4)** — Full game experience at 1280×720
+- **[Mobile Walkthrough](../game/screenshots/demo-video/mobile-walkthrough.mp4)** — Mobile-responsive view at 375×812
 
 ## Architecture in 90 Seconds
 

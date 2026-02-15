@@ -12,13 +12,59 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+import { execSync } from 'child_process';
+
 // Test configuration
 const CONFIG = {
-    foundryUrl: 'http://localhost:5272',
+    foundryUrl: null, // Discovered dynamically
+    commonPorts: [61341, 5272, 51319, 5000, 8080],
     timeout: 10000,
     dataPath: path.join(__dirname, '..', 'data'),
     srcPath: path.join(__dirname, '..', 'src')
 };
+
+/**
+ * Discover Foundry Local URL using CLI, then port scanning
+ */
+async function discoverFoundryUrl() {
+    // Try CLI-based discovery first
+    try {
+        const output = execSync('foundry service status', {
+            timeout: 5000,
+            encoding: 'utf-8',
+            stdio: ['pipe', 'pipe', 'pipe']
+        });
+        const urlMatch = output.match(/https?:\/\/(?:127\.0\.0\.1|localhost):(\d+)/i);
+        if (urlMatch) {
+            const port = parseInt(urlMatch[1], 10);
+            const url = `http://127.0.0.1:${port}`;
+            try {
+                const response = await fetch(`${url}/v1/models`, {
+                    signal: AbortSignal.timeout(3000)
+                });
+                if (response.ok) {
+                    log(`  [*] Discovered Foundry Local on port ${port} via CLI`, 'gray');
+                    return url;
+                }
+            } catch { /* port didn't respond */ }
+        }
+    } catch { /* CLI not available */ }
+
+    // Fall back to scanning common ports
+    for (const port of CONFIG.commonPorts) {
+        const url = `http://127.0.0.1:${port}`;
+        try {
+            const response = await fetch(`${url}/v1/models`, {
+                signal: AbortSignal.timeout(2000)
+            });
+            if (response.ok) {
+                log(`  [*] Discovered Foundry Local on port ${port} via scan`, 'gray');
+                return url;
+            }
+        } catch { /* try next port */ }
+    }
+    return null;
+}
 
 // Test results tracking
 let totalTests = 0;
@@ -165,6 +211,9 @@ async function testJavaScriptSyntax() {
     
     const jsFiles = ['game.js', 'levels.js', 'mentor.js'];
     
+    // Files that are entry points (not modules) and don't need exports
+    const entryPoints = ['game.js'];
+    
     for (const file of jsFiles) {
         try {
             const filePath = path.join(CONFIG.srcPath, file);
@@ -179,7 +228,11 @@ async function testJavaScriptSyntax() {
             const hasConsoleErrors = content.includes('console.error');
             const hasErrorHandling = content.includes('try') && content.includes('catch');
             
-            logTest(`${file} has module exports`, hasExports ? 'pass' : 'fail');
+            if (entryPoints.includes(file)) {
+                logTest(`${file} is valid entry point`, hasImports ? 'pass' : 'fail');
+            } else {
+                logTest(`${file} has module exports`, hasExports ? 'pass' : 'fail');
+            }
             logTest(`${file} has error handling`, hasErrorHandling ? 'pass' : 'fail');
         } catch (error) {
             logTest(`${file} syntax check`, 'fail', error.message);
@@ -193,6 +246,16 @@ async function testJavaScriptSyntax() {
 
 async function testFoundryLocalService() {
     log('\n🔌 Testing Foundry Local Service...', 'cyan');
+    
+    // Discover Foundry Local dynamically
+    CONFIG.foundryUrl = await discoverFoundryUrl();
+    
+    if (!CONFIG.foundryUrl) {
+        logTest('Foundry Local service is running', 'skip', 'Service not available');
+        log('  ℹ️  Foundry Local tests skipped - service not running', 'gray');
+        log('     Start with: foundry model run Phi-4', 'gray');
+        return;
+    }
     
     // Test service availability
     try {
@@ -209,29 +272,31 @@ async function testFoundryLocalService() {
             
             const data = await response.json();
             if (data.data && data.data.length > 0) {
-                logTest('Models are available', 'pass', data.data.map(m => m.id).join(', '));
+                const modelIds = data.data.map(m => m.id);
+                logTest('Models are available', 'pass', modelIds.join(', '));
+                
+                // Select a chat-capable model for the chat test
+                const chatModel = modelIds.find(m => 
+                    m.toLowerCase().includes('instruct') || 
+                    m.toLowerCase().includes('chat') ||
+                    m.toLowerCase().includes('phi')
+                ) || modelIds[0];
+                
+                // Test chat endpoint
+                await testChatEndpoint(chatModel);
             } else {
                 logTest('Models are available', 'fail', 'No models found');
             }
-            
-            // Test chat endpoint
-            await testChatEndpoint();
             
         } else {
             logTest('Foundry Local service is running', 'fail', `HTTP ${response.status}`);
         }
     } catch (error) {
-        if (error.name === 'AbortError') {
-            logTest('Foundry Local service is running', 'skip', 'Connection timeout');
-        } else {
-            logTest('Foundry Local service is running', 'skip', 'Service not available');
-        }
-        log('  ℹ️  Foundry Local tests skipped - service not running', 'gray');
-        log('     Start with: foundry model run Phi-4', 'gray');
+        logTest('Foundry Local service is running', 'fail', error.message);
     }
 }
 
-async function testChatEndpoint() {
+async function testChatEndpoint(modelId = 'Phi-4') {
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), CONFIG.timeout);
@@ -240,7 +305,7 @@ async function testChatEndpoint() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                model: 'Phi-4',
+                model: modelId,
                 messages: [{ role: 'user', content: 'Say "test successful" in 3 words or less.' }],
                 max_tokens: 20
             }),
@@ -308,12 +373,8 @@ async function testSecurity() {
     
     // Check for sensitive data in files
     const sensitivePatterns = [
-        /api[_-]?key/i,
-        /secret/i,
-        /password/i,
-        /private[_-]?key/i,
-        /bearer\s+[a-zA-Z0-9]/i,
-        /sk-[a-zA-Z0-9]{20,}/  // OpenAI-style keys
+        /(?:["']\s*(?:sk-[a-zA-Z0-9]{20,}|AIza[a-zA-Z0-9]{30,}|AKIA[a-zA-Z0-9]{16,})\s*["'])/,  // Real API key patterns
+        /bearer\s+[a-zA-Z0-9]{20,}/i  // Bearer tokens with actual values
     ];
     
     const filesToCheck = [
@@ -333,13 +394,10 @@ async function testSecurity() {
             let hasIssue = false;
             for (const pattern of sensitivePatterns) {
                 if (pattern.test(content)) {
-                    // Exclude false positives (comments, variable names without values)
-                    const matches = content.match(pattern);
-                    if (matches && !content.includes('// Example') && !content.includes('placeholder')) {
-                        hasIssue = true;
-                        securityIssues++;
-                        break;
-                    }
+                    hasIssue = true;
+                    securityIssues++;
+                    logTest(`${file} - no hardcoded secrets`, 'fail', 'Possible secret found');
+                    break;
                 }
             }
             

@@ -104,6 +104,8 @@ test-results/
 # ─────────────────────────────────────────────────────────────────────
 tests/test-results/
 tests/playwright-report/
+playwright/.cache/
+.playwright/
 
 # ─────────────────────────────────────────────────────────────────────
 # Game-Specific

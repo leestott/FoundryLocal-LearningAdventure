@@ -71,7 +71,7 @@ check_foundry() {
     fi
     
     # Fall back to scanning common ports
-    for port in 61341 5272 5000 8080; do
+    for port in 61341 5272 51319 5000 8080; do
         if curl -s --max-time 2 http://localhost:$port/v1/models > /dev/null 2>&1; then
             echo -e "${GREEN}[OK] Foundry Local is running on port $port!${NC}"
             return 0

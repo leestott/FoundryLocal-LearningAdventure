@@ -2,6 +2,20 @@
    Foundry Local Learning Adventure - Web Game Engine
    ═══════════════════════════════════════════════════════════════════ */
 
+// ═══════════════════════════════════════════════════════════════════
+// SECURITY: HTML Sanitization Helper
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Sanitize a string for safe insertion into HTML.
+ * Prevents XSS by escaping HTML special characters.
+ */
+function sanitizeHTML(str) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+}
+
 // Foundry Local Connection State - supports dynamic port discovery
 let foundryConnection = {
     connected: false,
@@ -197,10 +211,14 @@ function loadProgress() {
 }
 
 function saveProgress() {
-    localStorage.setItem('foundryGameProgress', JSON.stringify({
-        player: gameState.player,
-        levels: gameState.levels
-    }));
+    try {
+        localStorage.setItem('foundryGameProgress', JSON.stringify({
+            player: gameState.player,
+            levels: gameState.levels
+        }));
+    } catch (e) {
+        console.warn('[Game] Failed to save progress to localStorage:', e.message);
+    }
 }
 
 function updateStats() {
@@ -233,7 +251,7 @@ function showMenu() {
     const hour = new Date().getHours();
     let timeGreeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
     greeting.innerHTML = `
-        <h2>${timeGreeting}, ${gameState.player.name}! 👋</h2>
+        <h2>${sanitizeHTML(timeGreeting)}, ${sanitizeHTML(gameState.player.name)}! 👋</h2>
         <p>Ready to continue your Foundry adventure?</p>
     `;
     
@@ -526,7 +544,7 @@ function buildPromptImprovementUI(container, level) {
 async function testBadPrompt() {
     const output = document.getElementById('badPromptOutput');
     const response = document.getElementById('badResponse');
-    const level = GAME_DATA.levels.find(l => l.id === gameState.currentLevel);
+    const level = gameState.currentLevelData;
     
     output.style.display = 'block';
     response.innerHTML = '<span class="loading"></span> Generating...';
@@ -865,9 +883,9 @@ function createTool() {
     
     testSection.style.display = 'block';
     preview.innerHTML = `
-        <h5>🛠️ ${name}</h5>
-        <p style="color: var(--text-secondary); margin: 0.5rem 0;">${description}</p>
-        <code style="display: block; margin-top: 0.5rem; font-size: 0.85rem;">System: "${systemPrompt.substring(0, 100)}..."</code>
+        <h5>🛠️ ${sanitizeHTML(name)}</h5>
+        <p style="color: var(--text-secondary); margin: 0.5rem 0;">${sanitizeHTML(description)}</p>
+        <code style="display: block; margin-top: 0.5rem; font-size: 0.85rem;">System: "${sanitizeHTML(systemPrompt.substring(0, 100))}..."</code>
     `;
     
     addMentorMessage(`Great! You've created "${name}"! Now test it to see how it works.`, 'sage');
@@ -1020,7 +1038,7 @@ function showCompletionModal(level, badge) {
         <div class="completion-content" role="dialog" aria-labelledby="completionTitle" aria-modal="true">
             <div class="completion-icon">${level.rewardIcon}</div>
             <h2 class="completion-title" id="completionTitle">Level Complete!</h2>
-            <p class="completion-message">Congratulations! You've successfully completed ${level.title}.</p>
+            <p class="completion-message">Congratulations! You've successfully completed ${sanitizeHTML(level.title)}.</p>
             
             <div class="completion-badge">
                 <span>${safeBadge.icon}</span>
@@ -1122,7 +1140,7 @@ function showProgress() {
     const completed = Object.values(gameState.levels).filter(l => l.completed).length;
     
     content.innerHTML = `
-        <div class="progress-stat"><span>Player Name</span><span>${gameState.player.name}</span></div>
+        <div class="progress-stat"><span>Player Name</span><span>${sanitizeHTML(gameState.player.name)}</span></div>
         <div class="progress-stat"><span>Total Points</span><span>${gameState.player.totalPoints}</span></div>
         <div class="progress-stat"><span>Levels Completed</span><span>${completed} / 5</span></div>
         <div class="progress-stat"><span>Badges Earned</span><span>${gameState.player.badges.length} / 5</span></div>
@@ -1186,15 +1204,20 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Trap focus in modal
+// Trap focus in modal and handle ESC for all modal types
 document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        // Close any active modal (completion, mentor, or standard)
+        document.querySelectorAll('.completion-modal.active, .mentor-modal.active').forEach(m => m.classList.remove('active'));
+        const activeModal = document.querySelector('.modal.active');
+        if (activeModal) {
+            closeModal(activeModal.id);
+        }
+        return;
+    }
+    
     const activeModal = document.querySelector('.modal.active');
     if (!activeModal) return;
-    
-    if (e.key === 'Escape') {
-        const modalId = activeModal.id;
-        closeModal(modalId);
-    }
     
     if (e.key === 'Tab') {
         const focusableElements = activeModal.querySelectorAll(
@@ -1393,12 +1416,5 @@ document.addEventListener('click', (e) => {
 });
 
 // ═══════════════════════════════════════════════════════════════════
-// KEYBOARD SHORTCUTS
+// KEYBOARD SHORTCUTS (handled in focus trap listener above)
 // ═══════════════════════════════════════════════════════════════════
-
-document.addEventListener('keydown', (e) => {
-    // ESC to close modals
-    if (e.key === 'Escape') {
-        document.querySelectorAll('.modal.active, .completion-modal.active, .mentor-modal.active').forEach(m => m.classList.remove('active'));
-    }
-});
