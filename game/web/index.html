@@ -12,6 +12,15 @@
     <a href="#main-content" class="skip-link">Skip to main content</a>
     
     <div class="game-container" role="main" id="main-content">
+        <!-- Mentor Message Popup -->
+        <div class="mentor-message-popup" id="mentorMessagePopup" style="display: none;">
+            <div class="popup-header">
+                <span>🧙</span>
+                <span>Sage</span>
+            </div>
+            <div class="popup-message" id="popupMessageText"></div>
+        </div>
+
         <!-- Header -->
         <header class="game-header" role="banner">
             <div class="logo">
@@ -195,8 +204,9 @@
         </div>
 
         <!-- Mentor Chat Modal -->
-        <button class="mentor-fab" onclick="openMentorModal()" aria-label="Open AI Mentor Sage">
+        <button class="mentor-fab" onclick="openMentorModal()" aria-label="Open AI Mentor Sage" id="mentorFab">
             🧙
+            <span class="notification-badge" id="mentorNotificationBadge" style="display: none;">1</span>
         </button>
         
         <div class="mentor-modal" id="mentorModal" role="dialog" aria-labelledby="mentorModalTitle" aria-modal="true">

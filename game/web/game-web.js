@@ -398,7 +398,7 @@ function buildSimplePromptUI(container, level) {
         <p class="task-instruction">Type your message below and send it to the AI model.</p>
         <textarea class="task-input" id="promptInput" placeholder="Type your message here... Try 'Hello!' or 'What is Foundry Local?'" aria-label="Enter your prompt"></textarea>
         <div class="task-buttons">
-            <button class="btn btn-primary" onclick="sendSimplePrompt()" aria-label="Send prompt to AI model">
+            <button class="btn btn-primary" onclick="sendSimplePrompt(event)" aria-label="Send prompt to AI model">
                 <span class="btn-icon" aria-hidden="true">📤</span> Send to Model
             </button>
         </div>
@@ -412,7 +412,7 @@ function buildSimplePromptUI(container, level) {
     `;
 }
 
-async function sendSimplePrompt() {
+async function sendSimplePrompt(event) {
     const input = document.getElementById('promptInput');
     const output = document.getElementById('promptOutput');
     const response = document.getElementById('promptResponse');
@@ -1014,6 +1014,7 @@ function showCompletionModal(level, badge) {
     
     const nextLevel = level.id < 5 ? GAME_DATA.levels[level.id] : null;
     const allComplete = gameState.player.badges.length >= 5;
+    const safeBadge = badge || { icon: '🏆', name: 'Achievement Unlocked' };
     
     modal.innerHTML = `
         <div class="completion-content" role="dialog" aria-labelledby="completionTitle" aria-modal="true">
@@ -1022,8 +1023,8 @@ function showCompletionModal(level, badge) {
             <p class="completion-message">Congratulations! You've successfully completed ${level.title}.</p>
             
             <div class="completion-badge">
-                <span>${badge.icon}</span>
-                <span>${badge.name}</span>
+                <span>${safeBadge.icon}</span>
+                <span>${safeBadge.name}</span>
             </div>
             
             <div class="completion-points">+${level.points} Points</div>
@@ -1228,6 +1229,8 @@ function initMentor() {
 function openMentorModal() {
     const modal = document.getElementById('mentorModal');
     modal.classList.add('active');
+    hideMessagePopup();
+    clearNotificationBadge();
     setTimeout(() => {
         const input = document.getElementById('mentorModalInput');
         if (input) input.focus();
@@ -1246,6 +1249,52 @@ function addMentorModalMessage(text, type) {
     msg.textContent = text;
     messages.appendChild(msg);
     messages.scrollTop = messages.scrollHeight;
+    
+    if (type === 'sage') {
+        const modal = document.getElementById('mentorModal');
+        if (!modal.classList.contains('active')) {
+            showMessagePopup(text);
+            showNotificationBadge();
+        }
+    }
+}
+
+function showMessagePopup(message) {
+    const popup = document.getElementById('mentorMessagePopup');
+    const messageText = document.getElementById('popupMessageText');
+    
+    messageText.textContent = message.length > 80 ? message.substring(0, 80) + '...' : message;
+    popup.style.display = 'block';
+    
+    popup.onclick = () => {
+        openMentorModal();
+    };
+    
+    setTimeout(() => {
+        hideMessagePopup();
+    }, 8000);
+}
+
+function hideMessagePopup() {
+    const popup = document.getElementById('mentorMessagePopup');
+    popup.style.display = 'none';
+}
+
+function showNotificationBadge() {
+    const badge = document.getElementById('mentorNotificationBadge');
+    if (badge) {
+        const currentCount = parseInt(badge.textContent) || 0;
+        badge.textContent = currentCount + 1;
+        badge.style.display = 'flex';
+    }
+}
+
+function clearNotificationBadge() {
+    const badge = document.getElementById('mentorNotificationBadge');
+    if (badge) {
+        badge.textContent = '1';
+        badge.style.display = 'none';
+    }
 }
 
 function addMentorMessage(text, type) {
@@ -1350,6 +1399,6 @@ document.addEventListener('click', (e) => {
 document.addEventListener('keydown', (e) => {
     // ESC to close modals
     if (e.key === 'Escape') {
-        document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
+        document.querySelectorAll('.modal.active, .completion-modal.active, .mentor-modal.active').forEach(m => m.classList.remove('active'));
     }
 });
