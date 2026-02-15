@@ -316,11 +316,20 @@ function startLevel(levelId) {
     const breadcrumb = document.createElement('div');
     breadcrumb.className = 'breadcrumb';
     breadcrumb.innerHTML = `
-        <span class="breadcrumb-item breadcrumb-link" onclick="returnToMenu()" role="button" tabindex="0">Home</span>
+        <button type="button" class="breadcrumb-item breadcrumb-link" id="breadcrumbHomeButton">Home</button>
         <span class="breadcrumb-separator">/</span>
         <span class="breadcrumb-item active">Level ${level.id}: ${level.title}</span>
     `;
     levelHeader.parentElement.insertBefore(breadcrumb, levelHeader);
+    
+    const breadcrumbHomeButton = breadcrumb.querySelector('#breadcrumbHomeButton');
+    if (breadcrumbHomeButton) {
+        breadcrumbHomeButton.addEventListener('click', () => {
+            if (typeof returnToMenu === 'function') {
+                returnToMenu();
+            }
+        });
+    }
     
     // Populate level info
     document.getElementById('levelTitle').textContent = `Level ${level.id}: ${level.title}`;
