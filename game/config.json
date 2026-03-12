@@ -1,18 +1,13 @@
 {
   "foundryLocal": {
-    "baseUrl": "http://127.0.0.1:5272",
     "defaultModel": "Phi-3.5-mini-instruct-generic-cpu:1",
-    "autoDiscoverPort": true,
-    "useCliDiscovery": true,
-    "commonPorts": [61341, 5272, 51319, 5000, 8080],
+    "sdkAppName": "FoundryLearningAdventure",
+    "sdkLogLevel": "warn",
     "alternativeModels": [
       "Phi-3-mini",
       "Mistral-7B",
       "Llama-3.2-3B"
-    ],
-    "chatEndpoint": "/v1/chat/completions",
-    "embeddingsEndpoint": "/v1/embeddings",
-    "modelsEndpoint": "/v1/models"
+    ]
   },
   "azureFoundry": {
     "enabled": false,

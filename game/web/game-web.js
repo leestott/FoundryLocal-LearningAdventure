@@ -45,19 +45,47 @@ let gameState = {
 // FOUNDRY LOCAL CONNECTION
 // ═══════════════════════════════════════════════════════════════════
 
+/**
+ * Show a status detail message (and optional progress bar) below the connection pill.
+ * @param {string|null} message  Text to display, or null to hide the detail area.
+ * @param {number|null} percent  0-100 to show a progress bar, or null to hide it.
+ */
+function showStatusDetail(message, percent = null) {
+    const detailEl  = document.getElementById('connectionDetail');
+    const msgEl     = document.getElementById('detailMessage');
+    const progressEl = document.getElementById('detailProgress');
+    const fillEl    = document.getElementById('progressFill');
+    if (!detailEl) return;
+    if (message === null) {
+        detailEl.style.display = 'none';
+        return;
+    }
+    detailEl.style.display = '';
+    msgEl.textContent = message;
+    if (percent !== null) {
+        progressEl.style.display = '';
+        fillEl.style.width = `${Math.max(0, Math.min(100, percent))}%`;
+    } else {
+        progressEl.style.display = 'none';
+    }
+}
+
 async function checkFoundryConnection() {
     console.log('[Foundry] Checking for Foundry Local...');
+    showStatusDetail('Scanning for Foundry Local service…');
     
     // First, try to read the port discovered by the start script
     const discoveredPort = await readDiscoveredPort();
     if (discoveredPort) {
         const url = `http://127.0.0.1:${discoveredPort}`;
         console.log(`[Foundry] Trying CLI-discovered port ${discoveredPort}...`);
+        showStatusDetail(`Trying discovered port ${discoveredPort}…`);
         try {
             const response = await fetch(`${url}/v1/models`, {
                 signal: AbortSignal.timeout(2000)
             });
             if (response.ok) {
+                showStatusDetail('Loading model list…');
                 const data = await response.json();
                 foundryConnection.connected = true;
                 foundryConnection.baseUrl = url;
@@ -72,6 +100,8 @@ async function checkFoundryConnection() {
                 
                 console.log(`[Foundry] Connected to ${url} (discovered via CLI)`);
                 console.log(`[Foundry] Using model: ${foundryConnection.model}`);
+                showStatusDetail(`Connected — ${foundryConnection.availableModels.length} model(s) available`);
+                setTimeout(() => showStatusDetail(null), 3000);
                 updateConnectionStatus();
                 return true;
             }
@@ -81,13 +111,18 @@ async function checkFoundryConnection() {
     }
 
     // Fall back to scanning common ports
-    for (const port of foundryConnection.commonPorts) {
+    const totalPorts = foundryConnection.commonPorts.length;
+    for (let i = 0; i < totalPorts; i++) {
+        const port = foundryConnection.commonPorts[i];
         const url = `http://127.0.0.1:${port}`;
+        const pct = Math.round(((i + 1) / totalPorts) * 100);
+        showStatusDetail(`Scanning port ${port}…`, pct);
         try {
             const response = await fetch(`${url}/v1/models`, {
                 signal: AbortSignal.timeout(2000)
             });
             if (response.ok) {
+                showStatusDetail('Loading model list…');
                 const data = await response.json();
                 foundryConnection.connected = true;
                 foundryConnection.baseUrl = url;
@@ -104,6 +139,8 @@ async function checkFoundryConnection() {
                 console.log(`[Foundry] Connected to ${url}`);
                 console.log(`[Foundry] Available models: ${foundryConnection.availableModels.join(', ')}`);
                 console.log(`[Foundry] Using model: ${foundryConnection.model}`);
+                showStatusDetail(`Connected — ${foundryConnection.availableModels.length} model(s) available`);
+                setTimeout(() => showStatusDetail(null), 3000);
                 updateConnectionStatus();
                 return true;
             }
@@ -114,6 +151,7 @@ async function checkFoundryConnection() {
     
     console.log('[Foundry] Not detected - running in demo mode');
     foundryConnection.connected = false;
+    showStatusDetail(null);
     updateConnectionStatus();
     return false;
 }
@@ -126,9 +164,12 @@ async function waitForFoundry(maxWaitMs = 15000, intervalMs = 3000) {
     const start = Date.now();
     while (Date.now() - start < maxWaitMs) {
         if (await checkFoundryConnection()) return true;
-        console.log(`[Foundry] Not ready yet — retrying (${Math.ceil((maxWaitMs - (Date.now() - start)) / 1000)}s remaining)...`);
+        const remaining = Math.ceil((maxWaitMs - (Date.now() - start)) / 1000);
+        console.log(`[Foundry] Not ready yet — retrying (${remaining}s remaining)...`);
+        showStatusDetail(`Waiting for Foundry Local to start… (${remaining}s remaining)`, Math.round(((Date.now() - start) / maxWaitMs) * 100));
         await new Promise(r => setTimeout(r, intervalMs));
     }
+    showStatusDetail(null);
     return foundryConnection.connected;
 }
 
@@ -149,9 +190,13 @@ function startHealthCheck(intervalMs = 30000) {
         } catch { /* connection lost */ }
         console.log('[Foundry] Connection lost — re-discovering...');
         foundryConnection.connected = false;
+        updateConnectionStatus();
+        showStatusDetail('Connection lost — reconnecting…');
         const recovered = await checkFoundryConnection();
         if (!recovered) {
             console.log('[Foundry] Could not reconnect — running in demo mode');
+            showStatusDetail('Could not reconnect — running in demo mode');
+            setTimeout(() => showStatusDetail(null), 5000);
         }
     }, intervalMs);
 }
@@ -182,15 +227,64 @@ async function readDiscoveredPort() {
 
 function updateConnectionStatus() {
     const statusEl = document.getElementById('connectionStatus');
+    const selectorEl = document.getElementById('modelSelector');
     if (statusEl) {
         if (foundryConnection.connected) {
-            statusEl.innerHTML = `<span class="status-connected">🟢 Foundry Local (${foundryConnection.model?.split(':')[0] || 'Connected'})</span>`;
+            statusEl.innerHTML = `<span class="status-connected">🟢 Foundry Local</span>`;
             statusEl.title = `Connected to ${foundryConnection.baseUrl}`;
         } else {
             statusEl.innerHTML = `<span class="status-demo">🟡 Demo Mode</span>`;
             statusEl.title = 'Foundry Local not detected - using simulated responses';
         }
     }
+    if (selectorEl) {
+        if (foundryConnection.connected && foundryConnection.availableModels.length > 0) {
+            selectorEl.innerHTML = foundryConnection.availableModels
+                .map(m => `<option value="${sanitizeHTML(m)}"${m === foundryConnection.model ? ' selected' : ''}>${sanitizeHTML(m)}</option>`)
+                .join('');
+            selectorEl.style.display = '';
+        } else {
+            selectorEl.style.display = 'none';
+        }
+    }
+}
+
+async function changeModel(modelId) {
+    if (!foundryConnection.availableModels.includes(modelId)) return;
+    const previousModel = foundryConnection.model;
+    foundryConnection.model = modelId;
+    console.log(`[Foundry] Switching to model: ${modelId}`);
+
+    // Show loading state
+    const selectorEl = document.getElementById('modelSelector');
+    if (selectorEl) selectorEl.disabled = true;
+    showStatusDetail(`Loading model ${modelId}…`);
+
+    // Verify the model responds
+    try {
+        const response = await fetch(`${foundryConnection.baseUrl}/v1/chat/completions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: AbortSignal.timeout(10000),
+            body: JSON.stringify({
+                model: modelId,
+                messages: [{ role: 'user', content: 'hi' }],
+                max_tokens: 1,
+                temperature: 0
+            })
+        });
+        if (response.ok) {
+            showStatusDetail(`Switched to ${modelId}`);
+        } else {
+            showStatusDetail(`Model ${modelId} responded with status ${response.status} — it may still be loading`);
+        }
+    } catch (error) {
+        showStatusDetail(`Model ${modelId} selected — verification timed out, it may still be downloading`);
+    }
+
+    if (selectorEl) selectorEl.disabled = false;
+    setTimeout(() => showStatusDetail(null), 4000);
+    updateConnectionStatus();
 }
 
 async function callFoundryAPI(prompt, systemPrompt = null) {

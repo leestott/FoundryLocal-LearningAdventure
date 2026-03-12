@@ -52,7 +52,7 @@ npm test
 ```
 FoundryLocal-LearningAdventure/
 ├── README.md       # Main documentation
-├── LICENSE         # MIT License
+├── LICENSE         # MIT Licence
 ├── CONTRIBUTING.md # This file
 ├── SECURITY.md     # Security policy
 ├── .github/        # CI/CD workflows

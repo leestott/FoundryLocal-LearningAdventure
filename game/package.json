@@ -18,6 +18,9 @@
   "devDependencies": {
     "@playwright/test": "^1.40.0"
   },
+  "dependencies": {
+    "foundry-local-sdk": "^0.9.0"
+  },
   "keywords": [
     "foundry",
     "foundry-local",
@@ -35,11 +38,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/leestott/FoundryLocal-LearningAdventure.git"
   },
   "bugs": {
-    "url": ""
+    "url": "https://github.com/leestott/FoundryLocal-LearningAdventure/issues"
   },
+  "homepage": "https://leestott.github.io/FoundryLocal-LearningAdventure/",
   "engines": {
     "node": ">=18.0.0"
   }

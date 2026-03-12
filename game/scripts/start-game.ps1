@@ -63,57 +63,28 @@ function Test-NodeInstalled {
 }
 
 function Test-FoundryLocalRunning {
-    Write-ColorOutput "[*] Checking for Foundry Local service..." "Yellow"
+    Write-ColorOutput "[*] Checking for Foundry Local..." "Yellow"
     
-    # Try CLI-based discovery first (handles dynamic ports)
+    # Check if Foundry Local CLI is installed
     try {
-        $cliOutput = foundry service status 2>&1 | Out-String
-        if ($cliOutput -match 'https?://(?:127\.0\.0\.1|localhost):(\d+)') {
-            $discoveredPort = $Matches[1]
-            try {
-                $response = Invoke-WebRequest -Uri "http://127.0.0.1:$discoveredPort/v1/models" -TimeoutSec 3 -ErrorAction SilentlyContinue
-                if ($response.StatusCode -eq 200) {
-                    Write-ColorOutput "[OK] Foundry Local is running on port $discoveredPort (discovered via CLI)!" "Green"
-                    $models = ($response.Content | ConvertFrom-Json).data
-                    if ($models) {
-                        Write-ColorOutput "   Available models: $($models.id -join ', ')" "Cyan"
-                    }
-                    return $true
-                }
-            } catch {
-                # Discovered port didn't respond, continue scanning
-            }
+        $cliOutput = foundry --version 2>&1 | Out-String
+        if ($cliOutput) {
+            Write-ColorOutput "[OK] Foundry Local CLI detected" "Green"
+            Write-ColorOutput "     The SDK will handle model discovery and loading automatically." "Cyan"
+            return $true
         }
     } catch {
-        # Foundry CLI not available, fall back to port scanning
-    }
-    
-    # Fall back to scanning common ports
-    $ports = @(61341, 5272, 51319, 5000, 8080)
-    
-    foreach ($port in $ports) {
-        try {
-            $response = Invoke-WebRequest -Uri "http://localhost:$port/v1/models" -TimeoutSec 2 -ErrorAction SilentlyContinue
-            if ($response.StatusCode -eq 200) {
-                Write-ColorOutput "[OK] Foundry Local is running on port $port!" "Green"
-                $models = ($response.Content | ConvertFrom-Json).data
-                if ($models) {
-                    Write-ColorOutput "   Available models: $($models.id -join ', ')" "Cyan"
-                }
-                return $true
-            }
-        } catch {
-            # Try next port
-        }
+        # Foundry CLI not installed
     }
     
     Write-ColorOutput "[!] Foundry Local not detected (game will run in demo mode)" "Yellow"
     Write-Host ""
     Write-Host "To enable full AI features:"
     Write-Host "   1. Install Foundry Local: winget install Microsoft.FoundryLocal"
-    Write-Host "   2. Start a model: foundry model run Phi-4"
+    Write-Host "   2. Download a model: foundry model download Phi-4"
     Write-Host "   3. Then run this script again"
     Write-Host ""
+    Write-Host "   The SDK handles model loading automatically - no need to manually start a service."
     Write-Host "   The game works without Foundry Local, but responses will be simulated."
     Write-Host ""
     return $false

@@ -51,52 +51,20 @@ if not exist "node_modules\" (
 echo [OK] Dependencies ready
 echo.
 
-REM Check if Foundry Local is running - try CLI discovery first for dynamic ports
-echo [*] Checking for Foundry Local service...
+REM Check if Foundry Local is available
+echo [*] Checking for Foundry Local...
 
-REM Try CLI-based discovery (handles dynamic ports)
 where foundry >nul 2>nul
 if %ERRORLEVEL% EQU 0 (
-    for /f "tokens=*" %%i in ('foundry service status 2^>nul ^| findstr /R "http://127\.0\.0\.1:[0-9]* http://localhost:[0-9]*"') do (
-        for /f "tokens=2 delims=:" %%p in ("%%i") do (
-            set "CLI_PORT=%%p"
-        )
-    )
-    if defined CLI_PORT (
-        REM Extract just the port number from the URL
-        for /f "tokens=3 delims=:/" %%p in ("!CLI_PORT!") do set "CLI_PORT=%%p"
-        curl -s -o nul -w "%%{http_code}" http://127.0.0.1:!CLI_PORT!/v1/models >temp_status.txt 2>nul
-        set /p STATUS=<temp_status.txt
-        del temp_status.txt 2>nul
-        if "!STATUS!"=="200" (
-            echo [OK] Foundry Local is running on port !CLI_PORT! ^(discovered via CLI^)!
-            goto :start_game
-        )
-    )
-)
-
-REM Fall back to scanning common ports
-curl -s -o nul -w "%%{http_code}" http://localhost:61341/v1/models >temp_status.txt 2>nul
-set /p STATUS=<temp_status.txt
-del temp_status.txt 2>nul
-
-if "%STATUS%"=="200" (
-    echo [OK] Foundry Local is running - full AI features enabled!
-    goto :start_game
-)
-
-curl -s -o nul -w "%%{http_code}" http://localhost:5272/v1/models >temp_status.txt 2>nul
-set /p STATUS=<temp_status.txt
-del temp_status.txt 2>nul
-
-if "%STATUS%"=="200" (
-    echo [OK] Foundry Local is running - full AI features enabled!
+    echo [OK] Foundry Local CLI detected
+    echo      The SDK will handle model discovery and loading automatically.
 ) else (
     echo [!] Foundry Local not detected - running in demo mode
     echo    ^(The game still works, responses will be simulated^)
+    echo    Install with: winget install Microsoft.FoundryLocal
+    echo    Download a model: foundry model download Phi-4
 )
 
-:start_game
 echo.
 echo ====================================================================
 echo  LAUNCHING GAME...

@@ -1,6 +1,6 @@
 # 🎮 Foundry Local Learning Adventure
 
-> **Learn AI development by playing a game!** A fun, interactive JavaScript adventure that teaches you how to use Microsoft Foundry Local and AI tools - one level at a time.
+> **Learn AI development by playing a game!** A fun, interactive JavaScript adventure that teaches you how to use Microsoft Foundry Local and AI tools, one level at a time.
 
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -17,18 +17,14 @@
 
 The web version includes all 5 levels and works completely in your browser with simulated AI responses.
 
-For the full AI experience, install Foundry Local and start a model. **No port configuration needed** — the game automatically discovers Foundry Local's dynamic port using a 3-tier strategy:
-
-1. **CLI Discovery** — Runs `foundry service status` to find the active endpoint
-2. **Configured URL** — Tries the `baseUrl` from `config.json`
-3. **Port Scanning** — Falls back to scanning common ports
+For the full AI experience, install Foundry Local. **No port configuration needed.** The CLI game uses the `foundry-local-sdk` npm package to discover, download, and load models automatically. The web game scans for the Foundry Local service on known ports.
 
 ```bash
 # Install Foundry Local
 winget install Microsoft.FoundryLocal
 
-# Start a model (the game finds the port automatically)
-foundry model run Phi-4
+# CLI game: the SDK downloads and loads the model for you
+cd game && npm install && npm start
 ```
 ---
 
@@ -63,7 +59,7 @@ The **Foundry Local Learning Adventure** is an educational game designed for **c
 - ⚡ **AI Workflows** - Chaining operations together
 - 🔧 **Tool Building** - Extending AI capabilities
 
-You don't need any prior AI experience! Just follow along, complete challenges, and earn badges as you learn.
+You do not need any prior AI experience! Just follow along, complete challenges, and earn badges as you learn.
 
 ### Who is this for?
 
@@ -76,7 +72,7 @@ You don't need any prior AI experience! Just follow along, complete challenges, 
 
 ## 📚 What You'll Learn
 
-| Level | Topic | What You'll Master |
+| Level | Topic | What You Will Master |
 |-------|-------|-------------------|
 | 1 | **Meet the Model** | Making your first AI API call |
 | 2 | **Prompt Mastery** | Writing effective prompts |
@@ -93,11 +89,13 @@ The web version runs entirely in your browser with **no installation required**:
 - All 5 levels with interactive challenges
 - Progress saved automatically (localStorage)
 - Works on desktop, tablet, and mobile
-- Starts in Demo Mode — connects to **real Foundry Local** automatically if installed
+- Starts in Demo Mode; connects to **real Foundry Local** automatically if installed
+- Model selector dropdown lets you switch between available models
+- Real-time connection status shows scanning, loading, and download progress
 
 > **Tip for educators**: Fork the repo, enable [GitHub Pages](#-deploy-to-github-pages), and share the link with your class. Students can start learning immediately with zero setup.
 
-When you're ready for real AI interactions, try the [CLI version](#option-2-cli-terminal---full-experience) with Foundry Local.
+When you are ready for real AI interactions, try the [CLI version](#option-2-cli-terminal---full-experience) with Foundry Local.
 
 ---
 
@@ -107,11 +105,11 @@ Choose how you want to play:
 
 | Option | Best For | How to Start |
 |--------|----------|-------------|
-| **🌐 [Play Online](https://leestott.github.io/FoundryLocal-LearningAdventure/)** | Classrooms, quick demos, mobile | Click the link — no install needed |
+| **🌐 [Play Online](https://leestott.github.io/FoundryLocal-LearningAdventure/)** | Classrooms, quick demos, mobile | Click the link (no install needed) |
 | **🌐 Run Web Locally** | Offline use, local development | `cd game` then run `scripts/start-web.ps1` |
 | **💻 CLI (Terminal)** | Power users, traceable prompts | `cd game && npm start` |
 
-> All three options start in **Demo Mode** (simulated AI). Install [Foundry Local](#step-4-for-the-interactive-ai-install-foundry-local) for real AI responses — the game auto-discovers it on any port.
+> All three options start in **Demo Mode** (simulated AI). Install [Foundry Local](#step-4-for-the-interactive-ai-install-foundry-local) for real AI responses. The game discovers models automatically.
 
 ---
 
@@ -213,7 +211,7 @@ npm start
 
 ### Step 1: Install Node.js
 
-Node.js is required to run this game. It's free and easy to install.
+Node.js is required to run this game. It is free and easy to install.
 
 #### Windows
 1. Visit [nodejs.org](https://nodejs.org/)
@@ -283,12 +281,17 @@ The game works **without** Foundry Local (in demo mode), but for the full AI exp
 winget install Microsoft.FoundryLocal
 ```
 
-#### Start a Model
+#### Start the Game
+
+The CLI game uses the `foundry-local-sdk` to discover, download, and load models automatically. You do not need to start a model manually:
+
 ```bash
-foundry model run Phi-4
+cd game
+npm install
+npm start
 ```
 
-**Keep this terminal open** while you play! The model needs to be running.
+The SDK will find available models, download any that are missing, and load the best one for you.
 
 ---
 
@@ -324,7 +327,7 @@ npm start
 
 ## 🎮 How to Play
 
-When you start the game, you'll see a welcome screen:
+When you start the game, you will see a welcome screen:
 
 ```
 ╔══════════════════════════════════════════════════════════════════╗
@@ -358,9 +361,9 @@ Type `ask [your question]` anytime to chat with Sage.
 
 ### Level 1: Meet the Model 🎯
 
-**What you'll do**: Send your first message to an AI and get a response.
+**What you will do**: Send your first message to an AI and get a response.
 
-**What you'll learn**:
+**What you will learn**:
 - How AI models communicate
 - The request/response pattern
 - What happens when you call an AI
@@ -373,7 +376,7 @@ Your prompt: Hello! Please introduce yourself.
 **Tips**:
 - Just type a friendly greeting
 - Watch how the AI responds
-- There's no wrong answer here!
+- There is no wrong answer here!
 
 **Badge Earned**: 🎯 Prompt Apprentice (100 points)
 
@@ -381,9 +384,9 @@ Your prompt: Hello! Please introduce yourself.
 
 ### Level 2: Prompt Mastery ✍️
 
-**What you'll do**: Improve a poorly written prompt and compare results.
+**What you will do**: Improve a poorly written prompt and compare results.
 
-**What you'll learn**:
+**What you will learn**:
 - Why prompt quality matters
 - How to be specific and clear
 - The difference good prompts make
@@ -405,9 +408,9 @@ Your task:   Write a better version!
 
 ### Level 3: Embeddings Explorer 🔍
 
-**What you'll do**: Search a knowledge base using semantic similarity.
+**What you will do**: Search a knowledge base using semantic similarity.
 
-**What you'll learn**:
+**What you will learn**:
 - How AI understands meaning (not just keywords)
 - What embeddings are and how they work
 - How semantic search finds related content
@@ -429,9 +432,9 @@ Result: Finds content about Foundry Local's offline capabilities
 
 ### Level 4: Workflow Wizard ⚡
 
-**What you'll do**: Build a 3-step AI pipeline that processes text.
+**What you will do**: Build a 3-step AI pipeline that processes text.
 
-**What you'll learn**:
+**What you will learn**:
 - How to chain AI operations together
 - Passing output from one step to the next
 - Automating complex multi-step tasks
@@ -456,9 +459,9 @@ Step 3: Generate questions
 
 ### Level 5: Build Your Own Tool 🔧
 
-**What you'll do**: Create a JavaScript function and let AI use it.
+**What you will do**: Create a JavaScript function and let AI use it.
 
-**What you'll learn**:
+**What you will learn**:
 - What AI tools/functions are
 - How agents call external code
 - Extending what AI can do
@@ -483,7 +486,7 @@ function add_numbers(a, b) {
 ## 📸 Game Screenshots
 
 ### Welcome Screen
-When you first open the game, you'll see a friendly welcome screen:
+When you first open the game, you will see a friendly welcome screen:
 
 ![Welcome Screen](game/screenshots/01-welcome-screen.png)
 
@@ -528,8 +531,8 @@ Earn badges as you master each concept:
 
 See the game in action with our walkthrough videos:
 
-- **[Desktop Walkthrough](game/screenshots/demo-video/game-walkthrough.mp4)** — Full game experience (1280×720)
-- **[Mobile Walkthrough](game/screenshots/demo-video/mobile-walkthrough.mp4)** — Mobile-responsive view (375×812)
+- **[Desktop Walkthrough](game/screenshots/demo-video/game-walkthrough.mp4)**: Full game experience (1280×720)
+- **[Mobile Walkthrough](game/screenshots/demo-video/mobile-walkthrough.mp4)**: Mobile-responsive view (375×812)
 
 ---
 
@@ -564,13 +567,13 @@ See the game in action with our walkthrough videos:
 
 ### Point Milestones
 
-| Points | Title | You're... |
+| Points | Title | Description |
 |--------|-------|-----------|
 | 100 | Beginner | Just getting started! |
 | 250 | Learner | Making progress! |
 | 500 | Practitioner | Getting skilled! |
 | 750 | Expert | Almost a master! |
-| 1000 | Master | You've done it all! |
+| 1000 | Master | You have done it all! |
 
 ### Achievements
 
@@ -619,9 +622,9 @@ Deploy your own copy of the game to GitHub Pages for free hosting!
 
 ## ❓ Troubleshooting
 
-### "Node.js not found" or "node is not recognized"
+### "Node.js not found" or "node is not recognised"
 
-**What happened**: Node.js isn't installed or isn't in your PATH.
+**What happened**: Node.js is not installed or is not in your PATH.
 
 **Fix**:
 1. Download Node.js from [nodejs.org](https://nodejs.org/)
@@ -634,24 +637,22 @@ Deploy your own copy of the game to GitHub Pages for free hosting!
 
 ### "Foundry Local not detected"
 
-**What happened**: The game can't connect to Foundry Local.
+**What happened**: The game cannot connect to Foundry Local.
 
-**This is OK!** The game will work in "demo mode" with simulated responses.
+**This is fine!** The game will work in "demo mode" with simulated responses.
 
 **To enable full AI**:
-1. Open a **new terminal**
-2. Install: `winget install Microsoft.FoundryLocal`
-3. Start model: `foundry model run Phi-4`
-4. **Keep that terminal open**
-5. Start the game in a **different terminal**
+1. Install Foundry Local: `winget install Microsoft.FoundryLocal`
+2. Run `npm start` in the `game` folder
+3. The SDK will discover, download, and load a model automatically
 
-> **Note**: Foundry Local uses a dynamic port that changes each time it starts. The game automatically discovers the correct port via `foundry service status`. If that fails, it scans common ports (61341, 5272, 51319, 5000, 8080). You do **not** need to configure the port manually.
+> **Note**: The CLI game uses the `foundry-local-sdk` npm package, which manages the Foundry Local service lifecycle (starting, model loading) internally. You do **not** need to start a model or configure a port manually. The web version scans common ports (61341, 5272, 51319, 5000, 8080) to find the running service.
 
 ---
 
 ### "Cannot find module" or "MODULE_NOT_FOUND"
 
-**What happened**: Dependencies aren't installed.
+**What happened**: Dependencies are not installed.
 
 **Fix**:
 ```bash
@@ -664,7 +665,7 @@ npm start
 
 ### "Progress not saving"
 
-**What happened**: The game can't write to the progress file.
+**What happened**: The game cannot write to the progress file.
 
 **Fix**:
 - Use `quit` command to exit (not Ctrl+C)
@@ -676,11 +677,11 @@ npm start
 
 ### "Game is frozen" or "Taking too long"
 
-**What happened**: AI call is taking a while.
+**What happened**: The AI call is taking a while.
 
 **Fix**:
-- Wait 10-15 seconds (AI can be slow)
-- If Foundry Local: check it's still running
+- Wait 10 to 15 seconds (AI can be slow)
+- If using Foundry Local, check it is still running
 - Press Ctrl+C to cancel and try again
 - The game will use demo mode if AI is unavailable
 
@@ -690,15 +691,15 @@ npm start
 
 ### Do I need to know programming?
 
-**No!** The game teaches concepts through interaction. You'll learn as you go.
+**No!** The game teaches concepts through interaction. You will learn as you go.
 
 ### Do I need internet access?
 
-**No!** Everything runs on your computer. That's what "Local" means.
+**No!** Everything runs on your computer. That is what "Local" means.
 
 ### Do I need Foundry Local installed?
 
-**No!** The game has a demo mode. But you'll get better responses with it.
+**No!** The game has a demo mode. But you will get better responses with it.
 
 ### Can I skip levels?
 
@@ -706,15 +707,15 @@ npm start
 
 ### How long does it take to complete?
 
-Most people finish in **1-2 hours**. Take your time and enjoy!
+Most people finish in **1 to 2 hours**. Take your time and enjoy!
 
 ### What if I make a mistake?
 
-**No problem!** That's how you learn. Use `hint` or `ask` for help.
+**No problem!** That is how you learn. Use `hint` or `ask` for help.
 
 ### Can I replay completed levels?
 
-**Yes!** Type `play [number]` to replay any level.
+**Yes!** Type `play [number]` to replay any completed level.
 
 ### How do I reset my progress?
 
@@ -727,7 +728,9 @@ Type `reset` in the game, or run `npm run reset`.
 ```
 FoundryLocal-LearningAdventure/
 ├── README.md               # This file!
-├── LICENSE                 # MIT License
+├── AGENTS.md               # AI agent conventions
+├── changelog.md            # Version history
+├── LICENSE                 # MIT Licence
 ├── CONTRIBUTING.md         # Contribution guidelines
 ├── SECURITY.md             # Security policy
 ├── .gitignore              # Git ignore rules
@@ -737,8 +740,8 @@ FoundryLocal-LearningAdventure/
 │       └── test.yml        # Automated testing
 └── game/                   # Game source code
     ├── src/                # Source code (Node.js version)
-    │   ├── game.js         # Main game engine
-    │   ├── levels.js       # Level management & tasks
+    │   ├── game.js         # Main game engine (uses foundry-local-sdk)
+    │   ├── levels.js       # Level management and tasks
     │   └── mentor.js       # AI mentor (Sage)
     ├── web/                # Web version (GitHub Pages)
     │   ├── index.html      # Main HTML page
@@ -747,7 +750,7 @@ FoundryLocal-LearningAdventure/
     │   └── game-data.js    # Levels, rewards, mentor data
     ├── data/               # Game data (JSON)
     │   ├── levels.json     # Level definitions
-    │   ├── rewards.json    # Badges & achievements
+    │   ├── rewards.json    # Badges and achievements
     │   └── progress.json   # Your saved progress
     ├── screenshots/        # Game screenshots
     ├── tests/              # Test files
@@ -759,7 +762,7 @@ FoundryLocal-LearningAdventure/
     │   ├── start-web.ps1   # PowerShell Web launcher
     │   └── start-web.sh    # Mac/Linux Web launcher
     ├── config.json         # Settings
-    └── package.json        # Node.js configuration
+    └── package.json        # Node.js configuration (includes foundry-local-sdk)
 ```
 
 ---
@@ -805,16 +808,14 @@ Test output shows:
 
 ## ⚙️ Configuration
 
-Edit `config.json` to customize:
+Edit `config.json` to customise:
 
 ```json
 {
   "foundryLocal": {
-    "baseUrl": "http://127.0.0.1:5272",
-    "defaultModel": "Phi-4",
-    "autoDiscoverPort": true,
-    "useCliDiscovery": true,
-    "commonPorts": [61341, 5272, 51319, 5000, 8080]
+    "defaultModel": "Phi-3.5-mini-instruct-generic-cpu:1",
+    "sdkAppName": "FoundryLearningAdventure",
+    "sdkLogLevel": "warn"
   },
   "azureFoundry": {
     "enabled": false,
@@ -836,7 +837,7 @@ The game automatically detects available AI services:
 
 | Priority | Mode | Description |
 |----------|------|-------------|
-| 1 | **Foundry Local** | Uses local AI model (auto-discovers dynamic port via CLI) |
+| 1 | **Foundry Local** | Uses local AI model via the `foundry-local-sdk` (CLI) or HTTP port scanning (web) |
 | 2 | **Azure OpenAI** | Uses Azure cloud if configured |
 | 3 | **Demo Mode** | Simulated responses (fallback) |
 
@@ -861,15 +862,15 @@ To use Azure OpenAI instead of local models:
 
 ### Common Changes
 
-- **Port discovery**: The game auto-discovers Foundry Local's dynamic port. Set `autoDiscoverPort: false` in `config.json` to disable and use a fixed `baseUrl` instead
-- **Different model**: Change `defaultModel` to your preferred model
+- **Different model**: Change `defaultModel` to your preferred model alias
 - **More hints**: Increase `maxHintsPerLevel`
+- **SDK logging**: Set `sdkLogLevel` to `"info"` or `"debug"` for more detailed output
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! Here's how:
+We welcome contributions! Here is how:
 
 1. **Fork** the repository
 2. **Create** a branch: `git checkout -b my-feature`
@@ -899,9 +900,9 @@ We welcome contributions! Here's how:
 
 ---
 
-## 📄 License
+## 📄 Licence
 
-MIT License - Feel free to use, modify, and share!
+MIT Licence - Feel free to use, modify, and share!
 
 See [LICENSE](LICENSE) for details.
 

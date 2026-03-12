@@ -4,7 +4,8 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
+| 2.x.x   | :white_check_mark: |
+| 1.0.x   | :x:                |
 
 ## Reporting a Vulnerability
 
@@ -24,12 +25,12 @@ We will acknowledge receipt within 48 hours and aim to provide a fix within 7 da
 This game is designed to run locally without requiring any API keys or secrets. However, if you extend it:
 
 - **Never** commit `.env` files or any file containing secrets
-- Use `.env.example` to document required variables (without real values)
-- Keep API keys and tokens in environment variables, not in code
+- Keep API keys and tokens in environment variables or `config.json` (git-ignored), not in code
 
 ### Running Locally
 
-- The game connects to `localhost:5272` by default (Foundry Local)
+- The CLI game uses the `foundry-local-sdk` to connect to Foundry Local (no fixed port)
+- The web version scans known ports to discover the running service
 - No external network connections are made in demo mode
 - All data is stored locally in JSON files
 
@@ -53,7 +54,7 @@ Before submitting a PR, ensure:
 
 This project uses minimal dependencies to reduce attack surface:
 
-- **Zero production dependencies** - runs on Node.js built-ins only
+- Production dependencies are limited to `foundry-local-sdk` for local model interaction
 - Development dependencies are limited to testing tools
 
 ## Contact

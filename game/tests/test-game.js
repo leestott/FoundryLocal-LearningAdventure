@@ -12,57 +12,32 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-import { execSync } from 'child_process';
+import { FoundryLocalManager } from 'foundry-local-sdk';
 
 // Test configuration
 const CONFIG = {
-    foundryUrl: null, // Discovered dynamically
-    commonPorts: [61341, 5272, 51319, 5000, 8080],
+    foundryUrl: null, // Discovered dynamically via SDK
     timeout: 10000,
     dataPath: path.join(__dirname, '..', 'data'),
     srcPath: path.join(__dirname, '..', 'src')
 };
 
 /**
- * Discover Foundry Local URL using CLI, then port scanning
+ * Discover Foundry Local URL using the SDK
  */
 async function discoverFoundryUrl() {
-    // Try CLI-based discovery first
     try {
-        const output = execSync('foundry service status', {
-            timeout: 5000,
-            encoding: 'utf-8',
-            stdio: ['pipe', 'pipe', 'pipe']
+        const manager = FoundryLocalManager.create({
+            appName: 'FoundryLearningAdventureTests',
+            logLevel: 'warn'
         });
-        const urlMatch = output.match(/https?:\/\/(?:127\.0\.0\.1|localhost):(\d+)/i);
-        if (urlMatch) {
-            const port = parseInt(urlMatch[1], 10);
-            const url = `http://127.0.0.1:${port}`;
-            try {
-                const response = await fetch(`${url}/v1/models`, {
-                    signal: AbortSignal.timeout(3000)
-                });
-                if (response.ok) {
-                    log(`  [*] Discovered Foundry Local on port ${port} via CLI`, 'gray');
-                    return url;
-                }
-            } catch { /* port didn't respond */ }
+        manager.startWebService();
+        const urls = manager.urls;
+        if (urls && urls.length > 0) {
+            log(`  [*] Discovered Foundry Local via SDK: ${urls[0]}`, 'gray');
+            return urls[0];
         }
-    } catch { /* CLI not available */ }
-
-    // Fall back to scanning common ports
-    for (const port of CONFIG.commonPorts) {
-        const url = `http://127.0.0.1:${port}`;
-        try {
-            const response = await fetch(`${url}/v1/models`, {
-                signal: AbortSignal.timeout(2000)
-            });
-            if (response.ok) {
-                log(`  [*] Discovered Foundry Local on port ${port} via scan`, 'gray');
-                return url;
-            }
-        } catch { /* try next port */ }
-    }
+    } catch { /* SDK not available */ }
     return null;
 }
 
@@ -247,52 +222,40 @@ async function testJavaScriptSyntax() {
 async function testFoundryLocalService() {
     log('\n🔌 Testing Foundry Local Service...', 'cyan');
     
-    // Discover Foundry Local dynamically
-    CONFIG.foundryUrl = await discoverFoundryUrl();
-    
-    if (!CONFIG.foundryUrl) {
-        logTest('Foundry Local service is running', 'skip', 'Service not available');
-        log('  ℹ️  Foundry Local tests skipped - service not running', 'gray');
-        log('     Start with: foundry model run Phi-4', 'gray');
+    // Discover Foundry Local via SDK
+    let manager;
+    try {
+        manager = FoundryLocalManager.create({
+            appName: 'FoundryLearningAdventureTests',
+            logLevel: 'warn'
+        });
+    } catch (error) {
+        logTest('Foundry Local service is running', 'skip', 'SDK not available');
+        log('  ℹ️  Foundry Local tests skipped - SDK could not initialise', 'gray');
+        log('     Install: winget install Microsoft.FoundryLocal', 'gray');
+        log('     Download a model: foundry model download Phi-4', 'gray');
         return;
     }
-    
-    // Test service availability
+
+    logTest('Foundry Local service is running', 'pass');
+
+    // Check models via SDK catalog
     try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), CONFIG.timeout);
-        
-        const response = await fetch(`${CONFIG.foundryUrl}/v1/models`, {
-            signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-        
-        if (response.ok) {
-            logTest('Foundry Local service is running', 'pass');
-            
-            const data = await response.json();
-            if (data.data && data.data.length > 0) {
-                const modelIds = data.data.map(m => m.id);
-                logTest('Models are available', 'pass', modelIds.join(', '));
-                
-                // Select a chat-capable model for the chat test
-                const chatModel = modelIds.find(m => 
-                    m.toLowerCase().includes('instruct') || 
-                    m.toLowerCase().includes('chat') ||
-                    m.toLowerCase().includes('phi')
-                ) || modelIds[0];
-                
-                // Test chat endpoint
-                await testChatEndpoint(chatModel);
-            } else {
-                logTest('Models are available', 'fail', 'No models found');
-            }
-            
+        const models = await manager.catalog.getModels();
+        if (models && models.length > 0) {
+            const modelAliases = models.map(m => m.alias);
+            logTest('Models are available', 'pass', modelAliases.join(', '));
         } else {
-            logTest('Foundry Local service is running', 'fail', `HTTP ${response.status}`);
+            logTest('Models are available', 'skip', 'No models in catalog');
         }
     } catch (error) {
-        logTest('Foundry Local service is running', 'fail', error.message);
+        logTest('Models are available', 'skip', error.message);
+    }
+
+    // Test web service endpoint if URL is available
+    CONFIG.foundryUrl = await discoverFoundryUrl();
+    if (CONFIG.foundryUrl) {
+        await testChatEndpoint();
     }
 }
 

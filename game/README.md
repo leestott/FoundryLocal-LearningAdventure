@@ -1,6 +1,6 @@
-# 🎮 Foundry Local Learning Adventure - Game
+# 🎮 Foundry Local Learning Adventure: Game
 
-> **Learn AI development by playing a game!** A fun, interactive JavaScript adventure that teaches you how to use Microsoft Foundry Local and AI tools - one level at a time.
+> **Learn AI development by playing a game!** A fun, interactive JavaScript adventure that teaches you how to use Microsoft Foundry Local and AI tools, one level at a time.
 
 📖 **For full documentation, see the [main README](../README.md).**
 
@@ -91,7 +91,7 @@ Open http://localhost:8080
 |---------|---------|-----|
 | No installation | ✅ | ❌ |
 | Mobile support | ✅ | ❌ |
-| Real AI (Foundry Local) | ✅ (auto port discovery) | ✅ (auto port discovery) |
+| Real AI (Foundry Local) | ✅ (port scanning) | ✅ (SDK) |
 | Offline play | ✅ | ✅ |
 
 ---
@@ -118,6 +118,6 @@ npm test
 
 ---
 
-## 📄 License
+## 📄 Licence
 
-MIT License - See [LICENSE](../LICENSE) in root directory.
+MIT Licence: See [LICENSE](../LICENSE) in root directory.

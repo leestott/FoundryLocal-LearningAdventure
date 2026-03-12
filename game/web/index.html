@@ -29,9 +29,19 @@
                 <h1>Foundry Local Learning Adventure</h1>
             </div>
             <div class="header-right">
-                <div id="connectionStatus" class="connection-status" role="status" aria-live="polite" aria-label="Connection status">
-                    <span class="status-checking">⏳ Checking...</span>
+                <div class="connection-group">
+                    <div id="connectionStatus" class="connection-status" role="status" aria-live="polite" aria-label="Connection status">
+                        <span class="status-checking">⏳ Checking...</span>
+                    </div>
+                    <div id="connectionDetail" class="connection-detail" role="status" aria-live="polite" style="display: none;">
+                        <div class="detail-message" id="detailMessage"></div>
+                        <div class="detail-progress" id="detailProgress" style="display: none;">
+                            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+                        </div>
+                    </div>
                 </div>
+                <select id="modelSelector" class="model-selector" aria-label="Select AI model" style="display: none;" onchange="changeModel(this.value)">
+                </select>
                 <div class="player-stats" id="playerStats" aria-label="Player statistics">
                     <span class="stat" aria-label="Total points"><span class="stat-icon" aria-hidden="true">⭐</span> <span id="totalPoints">0</span> pts</span>
                     <span class="stat" aria-label="Badges earned"><span class="stat-icon" aria-hidden="true">🏆</span> <span id="badgeCount">0</span>/5</span>

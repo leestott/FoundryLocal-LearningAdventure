@@ -56,34 +56,22 @@ check_node() {
 }
 
 check_foundry() {
-    echo -e "${YELLOW}[*] Checking for Foundry Local service...${NC}"
+    echo -e "${YELLOW}[*] Checking for Foundry Local...${NC}"
     
-    # Try CLI-based discovery first (handles dynamic ports)
     if command -v foundry &> /dev/null; then
-        FOUNDRY_OUTPUT=$(foundry service status 2>&1)
-        DISCOVERED_PORT=$(echo "$FOUNDRY_OUTPUT" | grep -oP 'https?://(?:127\.0\.0\.1|localhost):\K\d+' | head -1)
-        if [ -n "$DISCOVERED_PORT" ]; then
-            if curl -s --max-time 3 "http://127.0.0.1:$DISCOVERED_PORT/v1/models" > /dev/null 2>&1; then
-                echo -e "${GREEN}[OK] Foundry Local is running on port $DISCOVERED_PORT (discovered via CLI)!${NC}"
-                return 0
-            fi
-        fi
+        echo -e "${GREEN}[OK] Foundry Local CLI detected${NC}"
+        echo -e "${CYAN}     The SDK will handle model discovery and loading automatically.${NC}"
+        return 0
     fi
-    
-    # Fall back to scanning common ports
-    for port in 61341 5272 51319 5000 8080; do
-        if curl -s --max-time 2 http://localhost:$port/v1/models > /dev/null 2>&1; then
-            echo -e "${GREEN}[OK] Foundry Local is running on port $port!${NC}"
-            return 0
-        fi
-    done
     
     echo -e "${YELLOW}[!] Foundry Local not detected (game will run in demo mode)${NC}"
     echo ""
     echo "To enable full AI features:"
     echo "   1. Install Foundry Local"
-    echo "   2. Start a model: foundry model run Phi-4"
+    echo "   2. Download a model: foundry model download Phi-4"
     echo "   3. Run this script again"
+    echo ""
+    echo "   The SDK handles model loading automatically - no need to manually start a service."
     echo ""
     return 1
 }

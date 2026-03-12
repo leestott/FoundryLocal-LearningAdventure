@@ -2,15 +2,16 @@
 
 *Published January 28, 2026*
 
-What if learning AI felt like playing a game? The **Foundry Local Learning Adventure** is an open-source project that turns abstract concepts — prompt engineering, embeddings, workflows, and tool building — into a playful 5-level quest that runs entirely on your machine. Whether you're a **student** exploring AI for the first time, an **educator** looking for a ready-made classroom activity, or a **developer** building your own AI learning tools, this post unpacks the design choices you can learn from and reuse.
+What if learning AI felt like playing a game? The **Foundry Local Learning Adventure** is an open-source project that turns abstract concepts (prompt engineering, embeddings, workflows, and tool building) into a playful 5-level quest that runs entirely on your machine. Whether you are a **student** exploring AI for the first time, an **educator** looking for a ready-made classroom activity, or a **developer** building your own AI learning tools, this post unpacks the design choices you can learn from and reuse.
 
 ## A Game That Teaches While You Play
 
 - **Mentored progression:** Five narrative levels, guided by Sage the in-game mentor, cover first prompts through tool-building. Each level layers a single new AI concept so players never feel lost.
-- **Every environment:** The same content powers a terminal-first experience for model tinkerers and a browser-friendly version for instant demos—perfect for hackathons or classrooms.
+- **Every environment:** The same content powers a terminal-first experience for model tinkerers and a browser-friendly version for instant demos, perfect for hackathons or classrooms.
 - **Offline-first mindset:** By default the game connects to Microsoft Foundry Local; if that is unavailable it gracefully falls back to Microsoft Foundry and Azure OpenAI or a fully simulated demo mode, keeping the learning loop unbroken.
-- **Classroom-ready:** Educators can fork the repo, enable GitHub Pages, and share a link — students start playing instantly with no local setup.
-- **Dynamic port discovery:** Foundry Local assigns a different port each time the service starts. Rather than asking learners to hunt for port numbers, the game automatically discovers the active endpoint using a 3-tier strategy: CLI-based discovery via `foundry service status`, the configured URL, and common port scanning.
+- **Classroom-ready:** Educators can fork the repo, enable GitHub Pages, and share a link. Students start playing instantly with no local setup.
+- **Model selection and status:** The web version includes a model selector dropdown and real-time connection status with download progress, so learners always know what the game is doing.
+- **SDK-powered discovery:** The CLI game uses the `foundry-local-sdk` npm package to discover, download, and load models automatically. No manual port configuration is needed.
 
 ## Scenes From Inside the Adventure
 
@@ -26,61 +27,56 @@ These PNG screenshots are captured automatically using Playwright tests, making 
 
 Want to see the game in action? Check out the walkthrough videos:
 
-- **[Desktop Walkthrough](../game/screenshots/demo-video/game-walkthrough.mp4)** — Full game experience at 1280×720
-- **[Mobile Walkthrough](../game/screenshots/demo-video/mobile-walkthrough.mp4)** — Mobile-responsive view at 375×812
+- **[Desktop Walkthrough](../game/screenshots/demo-video/game-walkthrough.mp4)**: Full game experience at 1280×720
+- **[Mobile Walkthrough](../game/screenshots/demo-video/mobile-walkthrough.mp4)**: Mobile-responsive view at 375×812
 
 ## Architecture in 90 Seconds
 
 1. **Content layer:** JSON files in `game/data/` define levels, hints, rewards, and sample prompts so writers and engineers can collaborate without stepping on each other.
-2. **Game engine:** `game/src/` houses the Node.js engine that orchestrates progress, mentor dialogue, and AI requests. The same logic feeds both CLI and web builds, ensuring parity.
-3. **Connectors:** Startup scripts in `game/scripts/` wire everything together for Windows, macOS, and Linux, and web boot scripts serve the SPA version from `game/web/`. For the web version, start scripts discover Foundry Local's dynamic port and write a `foundry-port.json` file so the browser can connect without manual configuration.
+2. **Game engine:** `game/src/` houses the Node.js engine that orchestrates progress, mentor dialogue, and AI requests. The CLI version uses the `foundry-local-sdk` npm package for native model interaction via FFI.
+3. **Web version:** The browser-based game in `game/web/` communicates via HTTP `fetch()` against the OpenAI-compatible REST API. It includes a model selector dropdown and real-time connection status with progress indicators. Startup scripts in `game/scripts/` wire everything together for Windows, macOS, and Linux.
 
 Because the engine persists progress to disk and mirrors it in `localStorage` on the web, learners can pause anywhere and pick back up without losing badges.
 
-## Code Spotlight: Dynamic Port Discovery
+## Code Spotlight: SDK-Powered Model Discovery
 
-One of the trickiest parts of working with Foundry Local is that it binds to a **different port every time it starts**. Asking beginners to find and configure port numbers kills the learning momentum. The game solves this with automatic discovery:
+One of the trickiest parts of working with Foundry Local used to be that it bound to a **different port every time it started**. Asking beginners to find and configure port numbers killed the learning momentum. The game now solves this with the `foundry-local-sdk` npm package, which handles discovery, download, and loading automatically:
 
 ```javascript
+import { FoundryLocalManager } from 'foundry-local-sdk';
+
 class FoundryLocalClient {
-  constructor(options = {}) {
-    this.baseUrl = options.baseUrl || 'http://127.0.0.1:5272';
-    this.model = options.model || 'Phi-3.5-mini-instruct-generic-cpu:1';
-    this.connectionMode = 'demo';
-    this.autoDiscoverPort = options.autoDiscoverPort !== false;
-    this.commonPorts = options.commonPorts || [61341, 5272, 51319, 5000, 8080];
+  async initializeSDK() {
+    // Create the SDK manager
+    this.manager = await FoundryLocalManager.create({
+      appName: 'FoundryLearningAdventure',
+      logLevel: 'warn'
+    });
+
+    // Discover available models from the local catalogue
+    const models = await this.manager.catalog.getModels();
+
+    // Download the model if needed, then load it
+    const model = models[0];
+    await model.download();
+    await model.load();
+
+    // Create a chat client for inference
+    this.chatClient = model.createChatClient();
+    this.chatClient.settings.maxTokens = 500;
+    this.chatClient.settings.temperature = 0.7;
   }
 
-  // 1️⃣ First try: ask the CLI for the active endpoint
-  discoverPortViaCLI() {
-    const output = execSync('foundry service status', { encoding: 'utf-8' });
-    const match = output.match(/https?:\/\/(?:127\.0\.0\.1|localhost):(\d+)/i);
-    return match ? `http://127.0.0.1:${match[1]}` : null;
-  }
-
-  // 2️⃣ Then: try the configured URL
-  // 3️⃣ Finally: scan common ports as a fallback
-  async tryFoundryLocal() {
-    if (this.autoDiscoverPort) {
-      const cliUrl = this.discoverPortViaCLI();
-      if (cliUrl && await this.tryFoundryUrl(cliUrl)) return true;
-    }
-    if (await this.tryFoundryUrl(this.baseUrl)) return true;
-    for (const port of this.commonPorts) { /* scan... */ }
-    return false;
+  async chat(messages) {
+    const response = await this.chatClient.completeChat(messages);
+    return response.choices[0].message.content;
   }
 }
 ```
 
-For the **web version**, the browser obviously cannot run CLI commands. Instead, the start scripts discover the port at launch time and write a tiny `foundry-port.json` file into the web directory:
+For the **web version**, the browser cannot use the SDK (it relies on native FFI). Instead, the web game scans known ports and communicates via the OpenAI-compatible REST API. The web UI also features a model selector dropdown and real-time status indicators showing scanning, download, and loading progress.
 
-```json
-{ "port": 47183, "discoveredAt": "2026-02-12T10:30:00Z" }
-```
-
-The browser reads this file first, then falls back to port scanning. The result: learners just run `foundry model run Phi-4` and everything connects automatically.
-
-Feel free to copy this pattern into your own agents. The triage between local, cloud, and simulated responses keeps workshops moving even when someone forgets to start their model.
+Feel free to adopt this pattern in your own projects. The triage between local SDK, cloud, and simulated responses keeps workshops moving even when someone forgets to install Foundry Local.
 
 ## Try the Adventure in Minutes
 
@@ -94,22 +90,22 @@ Feel free to copy this pattern into your own agents. The triage between local, c
 ## Remix Ideas
 
 ### For Educators
-1. **Swap the syllabus:** Edit `game/data/levels.json` to teach your curriculum — responsible AI, data literacy, or domain-specific copilot workflows. No code changes needed.
+1. **Swap the syllabus:** Edit `game/data/levels.json` to teach your curriculum (responsible AI, data literacy, or domain-specific copilot workflows). No code changes needed.
 2. **Run a classroom challenge:** Fork the repo, enable GitHub Pages, and share the link. Students race to earn all five badges while learning at their own pace.
 3. **Add assessment hooks:** Extend the progress system to export completion data, giving you visibility into which concepts students find easy or hard.
 
 ### For Developers
-4. **Inject real tools:** Follow Level 5's pattern to register functions — vector searchers, DevOps runbooks, database queries — that AI characters can call.
+4. **Inject real tools:** Follow Level 5's pattern to register functions (vector searchers, DevOps runbooks, database queries) that AI characters can call.
 5. **Add observability:** Hook tracing into `FoundryLocalClient.chat()` so users can watch tokens flow in real time.
-6. **Borrow the port discovery:** Drop `discoverPortViaCLI()` into your own Foundry Local projects so users never have to configure a port manually.
+6. **Use the SDK pattern:** Drop the `foundry-local-sdk` initialisation pattern into your own Foundry Local projects for automatic model discovery and loading.
 
 ### For Students
-7. **Extend a level:** Pick any level and add a new challenge or hint — a great first open-source contribution.
+7. **Extend a level:** Pick any level and add a new challenge or hint. This is a great first open-source contribution.
 8. **Build your own tool:** After completing Level 5, create a tool that solves a real problem you care about and submit a PR.
 
 ## Call to Adventure
 
-The entire project is open source under MIT. Whether you're a student earning your first badge, an educator sharing it with a class, or a developer remixing it into something new — jump in:
+The entire project is open source under MIT. Whether you are a student earning your first badge, an educator sharing it with a class, or a developer remixing it into something new, jump in:
 
 👉 **[Explore the repo and start playing](https://github.com/leestott/FoundryLocal-LearningAdventure)**
 
